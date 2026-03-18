@@ -231,6 +231,9 @@ export default async function CafeRewardPage(props: {
             )}
           </form>
         )}
+        <a href="/dashboard" className="mt-4 block w-full bg-indigo-600 text-white font-bold py-3 px-6 rounded-xl hover:bg-indigo-700 transition-colors text-center">
+          Go to Your Dashboard
+        </a>
       </div>
 
     </div>
