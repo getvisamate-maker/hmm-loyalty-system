@@ -20,10 +20,11 @@ export async function addStamp(cafeId: string, cardId: string, pin: string, path
     console.warn("⚠️ SUPABASE_SERVICE_ROLE_KEY missing. operations may fail due to RLS.");
   }
 
-  // 1. Verify PIN and Get Configuration
+  // 1. Verify Cafe and Get Configuration
+  // Fetch non-sensitive config first
   const { data: cafe, error: cafeError } = await db
     .from("cafes")
-    .select("pin_code, stamps_required, security_mode")
+    .select("stamps_required, security_mode") // Removed pin_code
     .eq("id", cafeId)
     .single();
 
@@ -34,7 +35,19 @@ export async function addStamp(cafeId: string, cardId: string, pin: string, path
   
   // Enforce PIN based on security_mode
   if (cafe.security_mode === 'pin_code' || cafe.security_mode === 'pin') {
-    const correctPin = cafe.pin_code ? String(cafe.pin_code).trim() : "1234";
+    // Fetch PIN from secrets table securely
+    const { data: secret, error: secretError } = await db
+      .from("cafe_secrets")
+      .select("pin_code")
+      .eq("cafe_id", cafeId)
+      .single();
+
+    if (secretError || !secret) {
+      console.error("Secret missing for cafe", cafeId);
+      return { success: false, message: "Security configuration error." };
+    }
+
+    const correctPin = secret.pin_code ? String(secret.pin_code).trim() : "1234";
     if (pin.trim() !== correctPin) {
       return { success: false, message: "Incorrect PIN" };
     }

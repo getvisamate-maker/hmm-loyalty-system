@@ -44,15 +44,50 @@ export async function updateCafeSettings(cafeId: string, data: any, slug: string
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) throw new Error("Unauthorized");
 
+  // Extract sensitive fields
+  const { pin_code, ...publicData } = data;
+
+  // Update public info
   const { error } = await supabase
     .from("cafes")
-    .update(data)
+    .update(publicData)
     .eq("id", cafeId)
     .eq("owner_id", user.id);
 
   if (error) {
     console.error("Error updating settings:", error);
     throw new Error("Failed to update settings");
+  }
+
+  // Update secrets if provided
+  if (pin_code !== undefined) {
+    // Check if secret exists first
+    const { data: existingSecret } = await supabase
+      .from("cafe_secrets")
+      .select("cafe_id")
+      .eq("cafe_id", cafeId)
+      .single();
+
+    if (existingSecret) {
+      const { error: secretError } = await supabase
+        .from("cafe_secrets")
+        .update({ pin_code })
+        .eq("cafe_id", cafeId);
+
+      if (secretError) {
+        console.error("Error updating secret:", secretError);
+        // Don't fail the whole request, but log it
+      }
+    } else {
+      // Create new secret entry
+      const { error: secretError } = await supabase
+        .from("cafe_secrets")
+        .insert({ cafe_id: cafeId, pin_code });
+      
+      if (secretError) {
+        console.error("Error creating secret:", secretError);
+      }
+    }
   }
 
   revalidatePath(`/dashboard/cafe/${slug}`);

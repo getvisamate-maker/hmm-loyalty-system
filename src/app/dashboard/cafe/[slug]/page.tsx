@@ -48,6 +48,18 @@ export default async function CafeManagementPage(props: {
     return redirect("/dashboard");
   }
 
+  // Fetch secret PIN - owner only
+  const { data: secret } = await supabase
+    .from("cafe_secrets")
+    .select("pin_code")
+    .eq("cafe_id", cafe.id)
+    .single();
+
+  const cafeWithSecret = {
+    ...cafe,
+    pin_code: secret?.pin_code || cafe.pin_code || "0000",
+  };
+
   // Init Admin Client for Analytics (Bypasses RLS to ensure accurate stats)
   let analyticsClient: any = supabase;
   if (process.env.SUPABASE_SERVICE_ROLE_KEY && process.env.NEXT_PUBLIC_SUPABASE_URL) {
@@ -247,7 +259,7 @@ export default async function CafeManagementPage(props: {
                   <Settings className="text-zinc-400" />
                   <h3 className="font-bold text-zinc-900 dark:text-white">Cafe Configuration</h3>
                 </div>
-                <CafeSettingsForm cafe={cafe} />
+                <CafeSettingsForm cafe={cafeWithSecret} />
               </div>
             </div>
 

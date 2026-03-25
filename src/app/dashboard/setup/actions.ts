@@ -46,14 +46,14 @@ export async function createCafe(prevState: any, formData: FormData) {
     }
 
     // Insert Cafe
-    const { data, error } = await supabase
+    const { data: cafeData, error } = await supabase
       .from("cafes")
       .insert({
         owner_id: user.id,
         name: name,
         slug: slug,
         stamps_required: stamps,
-        pin_code: pin,
+        // pin_code: pin, // Moved to cafe_secrets
         brand_color: color,
         logo_url: logoUrl
       })
@@ -68,7 +68,23 @@ export async function createCafe(prevState: any, formData: FormData) {
       return { success: false, message: "Failed to create cafe. Please try again." };
     }
 
-    return { success: true, cafeId: data.id, slug: data.slug };
+    // Insert Secret PIN
+    const { error: secretError } = await supabase
+      .from("cafe_secrets")
+      .insert({
+        cafe_id: cafeData.id,
+        pin_code: pin
+      });
+
+    if (secretError) {
+      console.error("Secret insert error:", secretError);
+      // Clean up cafe if secret fails? ideally transaction, but for now just warn
+      // or try to delete the cafe to prevent partial state
+      await supabase.from("cafes").delete().eq("id", cafeData.id);
+      return { success: false, message: "Failed to set security PIN. Please try again." };
+    }
+
+    return { success: true, cafeId: cafeData.id, slug: cafeData.slug };
   } catch (e) {
     console.error("Unexpected error:", e);
     return { success: false, message: "An unexpected error occurred." };
