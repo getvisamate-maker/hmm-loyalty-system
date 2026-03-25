@@ -23,7 +23,7 @@ export async function addStamp(cafeId: string, cardId: string, pin: string, path
   // 1. Verify PIN and Get Configuration
   const { data: cafe, error: cafeError } = await db
     .from("cafes")
-    .select("pin_code, stamps_required")
+    .select("pin_code, stamps_required, security_mode")
     .eq("id", cafeId)
     .single();
 
@@ -32,12 +32,16 @@ export async function addStamp(cafeId: string, cardId: string, pin: string, path
     return { success: false, message: "System error: Could not verify cafe." };
   }
   
-  const correctPin = cafe.pin_code ? String(cafe.pin_code).trim() : "1234";
-  
-  if (pin.trim() !== correctPin) {
-    return { success: false, message: "Incorrect PIN" };
+  // Enforce PIN based on security_mode
+  if (cafe.security_mode === 'pin') {
+    const correctPin = cafe.pin_code ? String(cafe.pin_code).trim() : "1234";
+    if (pin.trim() !== correctPin) {
+      return { success: false, message: "Incorrect PIN" };
+    }
   }
-
+  // For 'visual' or 'geo' (placeholder), we skip the strict PIN check if not enforced.
+  // HOWEVER, the UI still sends a PIN. If we want to strictly ignore it, we do nothing here.
+  
   // 2. Fetch Current Card State
   const { data: card, error: cardReadError } = await db
     .from("loyalty_cards")

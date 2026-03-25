@@ -4,13 +4,17 @@ import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { QrCodeGenerator } from "./qr-generator";
-import { Users, Award, ShieldCheck, Link as LinkIcon, Gift, Activity, Image as ImageIcon, Megaphone, Settings, TrendingUp, Coffee as CoffeeIcon } from "lucide-react";
+import { Users, Award, ShieldCheck, Link as LinkIcon, Gift, Activity, Image as ImageIcon, Megaphone, Settings, TrendingUp, Coffee as CoffeeIcon, Shield } from "lucide-react";
 import { LogoUpload } from "./logo-upload";
 import { CampaignForm } from "./campaign-form";
 import { CafeSettingsForm } from "./settings-form";
+import { BusinessFlowChart } from "./flow-chart";
 
 // Force dynamic rendering to prevent Vercel from trying to statically generate this authenticated page
 export const dynamic = "force-dynamic";
+
+// ⚠️ Add your admin email here to see the button
+const ADMIN_EMAILS = ["bhattey@example.com", "your-email@example.com"];
 
 export default async function CafeManagementPage(props: {
   params: Promise<{ slug: string }>;
@@ -28,6 +32,8 @@ export default async function CafeManagementPage(props: {
   if (authError || !user) {
     return redirect("/login");
   }
+
+  const isAdmin = user.email && ADMIN_EMAILS.includes(user.email);
 
   // Fetch the specific cafe
   const { data: cafe, error: cafeError } = await supabase
@@ -150,6 +156,15 @@ export default async function CafeManagementPage(props: {
           <Link href="/dashboard" className="text-zinc-500 hover:text-black dark:hover:text-white">
             &larr; Back to Dashboard
           </Link>
+          
+          {/* Secret Admin Button */}
+          {isAdmin && (
+             <Link href="/admin" className="text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 flex items-center gap-1 text-xs font-bold border border-indigo-200 dark:border-indigo-800 px-3 py-1.5 rounded-full transition-colors">
+                <Shield size={12} />
+                Super Admin
+             </Link>
+          )}
+
           <h1 className="text-3xl font-bold dark:text-white">{cafe.name}</h1>
         </div>
 
@@ -200,27 +215,10 @@ export default async function CafeManagementPage(props: {
                   </span>
                 </div>
                 
-                <div className="flex items-end gap-2 h-32 mt-4">
-                  {dailyFlowArray.map(([day, count], index) => {
-                    // Simple relative height calc
-                    const maxCount = Math.max(...dailyFlowArray.map(arr => arr[1]), 1);
-                    const heightPercent = Math.max((count / maxCount) * 100, 5); // 5% minimum bar height
-                    return (
-                      <div key={day} className="flex-1 flex flex-col justify-end items-center gap-2 group">
-                        <span className="text-xs font-bold text-transparent group-hover:text-zinc-400 transition-colors">
-                          {count}
-                        </span>
-                        <div 
-                          className="w-full bg-indigo-500/20 hover:bg-indigo-500 rounded-t-lg transition-all duration-300 relative"
-                          style={{ height: `${heightPercent}%` }}
-                        >
-                          {index === 6 && <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-indigo-500"></div>}
-                        </div>
-                        <span className="text-xs font-medium text-zinc-500">{day}</span>
-                      </div>
-                    );
-                  })}
-                </div>
+                {/* Modern Recharts Component */}
+                <BusinessFlowChart 
+                  data={dailyFlowArray.map(([day, count]) => ({ day, count }))} 
+                />
                 
                 <p className="mt-6 text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed bg-zinc-50 dark:bg-zinc-950 p-4 rounded-xl border border-zinc-100 dark:border-zinc-800/50">
                   <strong className="text-zinc-900 dark:text-zinc-200">Analysis: </strong>

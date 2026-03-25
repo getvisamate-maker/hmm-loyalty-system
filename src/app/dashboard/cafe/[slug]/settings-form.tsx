@@ -8,13 +8,17 @@ export function CafeSettingsForm({ cafe }: { cafe: any }) {
   const [status, setStatus] = useState<"idle" | "loading" | "success">("idle");
   const [formData, setFormData] = useState({
     name: cafe.name,
+    description: cafe.description || "",
+    address: cafe.address || "",
+    phone_number: cafe.phone_number || "",
+    instagram_url: cafe.instagram_url || "",
     stamps_required: cafe.stamps_required,
     security_mode: cafe.security_mode || "visual",
     time_lock_hours: cafe.time_lock_hours || 2,
     pin_code: cafe.pin_code || "0000",
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData(prev => ({
       ...prev,
       [e.target.name]: e.target.value
@@ -28,6 +32,10 @@ export function CafeSettingsForm({ cafe }: { cafe: any }) {
     try {
       await updateCafeSettings(cafe.id, {
         name: formData.name,
+        description: formData.description,
+        address: formData.address,
+        phone_number: formData.phone_number,
+        instagram_url: formData.instagram_url,
         stamps_required: parseInt(formData.stamps_required.toString()),
         security_mode: formData.security_mode,
         time_lock_hours: parseFloat(formData.time_lock_hours.toString()),
@@ -45,33 +53,84 @@ export function CafeSettingsForm({ cafe }: { cafe: any }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6">
         {/* Core Settings */}
         <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-1">Cafe Name</label>
-            <input 
-              type="text" 
-              name="name"
-              required
-              value={formData.name}
-              onChange={handleChange}
-              className="w-full bg-zinc-50 dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-2 text-sm text-zinc-900 dark:text-white outline-none focus:border-indigo-500 transition-colors" 
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-1">Cafe Name</label>
+              <input 
+                type="text" 
+                name="name"
+                required
+                value={formData.name}
+                onChange={handleChange}
+                className="w-full bg-zinc-50 dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-2 text-sm text-zinc-900 dark:text-white outline-none focus:border-indigo-500 transition-colors" 
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-1">Stamps Needed for Reward</label>
+              <input 
+                type="number" 
+                name="stamps_required"
+                min="1"
+                max="20"
+                required
+                value={formData.stamps_required}
+                onChange={handleChange}
+                className="w-full bg-zinc-50 dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-2 text-sm text-zinc-900 dark:text-white outline-none focus:border-indigo-500 transition-colors" 
+              />
+            </div>
           </div>
+
           <div>
-            <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-1">Stamps Needed for Reward</label>
-            <input 
-              type="number" 
-              name="stamps_required"
-              min="1"
-              max="20"
-              required
-              value={formData.stamps_required}
-              onChange={handleChange}
-              className="w-full bg-zinc-50 dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-2 text-sm text-zinc-900 dark:text-white outline-none focus:border-indigo-500 transition-colors" 
-            />
-          </div>
+             <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-1">Description</label>
+             <textarea 
+               name="description"
+               rows={3}
+               value={formData.description}
+               onChange={handleChange}
+               className="w-full bg-zinc-50 dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-2 text-sm text-zinc-900 dark:text-white outline-none focus:border-indigo-500 transition-colors" 
+               placeholder="Tell customers about your cafe..."
+             />
+           </div>
+
+           <div>
+             <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-1">Address</label>
+             <input 
+               type="text" 
+               name="address"
+               value={formData.address}
+               onChange={handleChange}
+               className="w-full bg-zinc-50 dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-2 text-sm text-zinc-900 dark:text-white outline-none focus:border-indigo-500 transition-colors" 
+               placeholder="123 Coffee St. NY, NY"
+             />
+           </div>
+
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+             <div>
+               <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-1">Phone Number</label>
+               <input 
+                 type="tel" 
+                 name="phone_number"
+                 value={formData.phone_number}
+                 onChange={handleChange}
+                 className="w-full bg-zinc-50 dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-2 text-sm text-zinc-900 dark:text-white outline-none focus:border-indigo-500 transition-colors" 
+                 placeholder="+1 (555) 000-0000"
+               />
+             </div>
+             <div>
+               <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-1">Instagram URL</label>
+               <input 
+                 type="url" 
+                 name="instagram_url"
+                 value={formData.instagram_url}
+                 onChange={handleChange}
+                 className="w-full bg-zinc-50 dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-2 text-sm text-zinc-900 dark:text-white outline-none focus:border-indigo-500 transition-colors" 
+                 placeholder="https://instagram.com/your_cafe"
+               />
+             </div>
+           </div>
         </div>
 
         {/* Security Settings */}

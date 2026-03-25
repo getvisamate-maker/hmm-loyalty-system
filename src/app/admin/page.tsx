@@ -3,11 +3,12 @@ import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { togglePartnerStatus } from "./actions";
-import { Check, Shield, User } from "lucide-react";
+import { Check, Shield, User, Clock, AlertCircle } from "lucide-react";
 
 // ⚠️ IMPORTANT: Add your actual email here.
 // If your email is "john@example.com", the array should look like ["john@example.com"]
-const ADMIN_EMAILS = ["hiremyminutes@gmail.com"]; 
+// Updated: Use environment variable for security
+const ADMIN_EMAILS = process.env.ADMIN_EMAILS ? process.env.ADMIN_EMAILS.split(',') : []; 
 
 export const dynamic = "force-dynamic";
 
@@ -38,10 +39,22 @@ export default async function AdminDashboard() {
     { auth: { persistSession: false } }
   );
 
-  const { data: profiles } = await adminDb
-    .from("profiles")
-    .select("*")
-    .order("created_at", { ascending: false });
+  let profiles;
+  try {
+    const { data, error } = await adminDb
+      .from("profiles")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    profiles = data;
+  } catch (error) {
+    console.error("Error fetching profiles:", error);
+    return (
+      <div className="p-8 text-red-500 font-bold">
+        Error loading user data. Please try again later.
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-black p-8 font-sans">
@@ -89,31 +102,42 @@ export default async function AdminDashboard() {
                       {profile.is_partner ? (
                         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200">
                           <Check size={12} />
-                          Partner / Cafe Owner
+                          Partner
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-zinc-100 text-zinc-600 border border-zinc-200">
-                          Customer
-                        </span>
+                        <div className="flex flex-col gap-1 items-start">
+                           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-zinc-100 text-zinc-600 border border-zinc-200">
+                            Customer
+                          </span>
+                          
+                          {/* Show requested status if they asked to be an owner */}
+                          {profile.role === "owner" && !profile.is_partner && (
+                            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] uppercase font-bold bg-amber-50 text-amber-600 border border-amber-200 tracking-wide">
+                              <Clock size={10} />
+                              Requested Access
+                            </span>
+                          )}
+                        </div>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-zinc-500">
-                      {new Date(profile.updated_at || profile.created_at).toLocaleDateString()}
+                    <td className="px-6 py-4 text-zinc-500 text-xs">
+                       {/* Show join date */}
+                       <div>Joined {new Date(profile.created_at).toLocaleDateString()}</div>
+                       <div className="text-zinc-400">{profile.email}</div>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <form action={async () => {
+                       <form action={async () => {
                         "use server";
                         await togglePartnerStatus(profile.id, !profile.is_partner);
                       }}>
                         <button 
-                          type="submit"
-                          className={`font-medium text-xs px-4 py-2 rounded-lg transition-colors ${
+                          className={`font-medium text-xs px-4 py-2 rounded-lg transition-colors border ${
                             profile.is_partner 
-                              ? "text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20" 
-                              : "bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm"
+                              ? "bg-white border-zinc-200 text-zinc-600 hover:bg-red-50 hover:text-red-600 hover:border-red-200" 
+                              : "bg-black text-white hover:bg-zinc-800 border-transparent shadow-sm"
                           }`}
                         >
-                          {profile.is_partner ? "Revoke Access" : "Approve as Partner"}
+                          {profile.is_partner ? "Revoke Partner" : "Approve Partner"}
                         </button>
                       </form>
                     </td>

@@ -16,7 +16,12 @@ export async function togglePartnerStatus(userId: string, newStatus: boolean) {
 
   const { error } = await supabase
     .from("profiles")
-    .update({ is_partner: newStatus })
+    .update({ 
+      is_partner: newStatus,
+      // If we are approving them, we should also set their 'role' to 'owner' so it reflects in the UI cleanly 
+      // If un-approving, we can set back to 'customer'
+      role: newStatus ? 'owner' : 'customer'
+    })
     .eq("id", userId);
 
   if (error) {

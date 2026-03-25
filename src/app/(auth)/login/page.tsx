@@ -22,7 +22,8 @@ export default async function LoginPage(props: {
     });
 
     if (error) {
-      return redirect(`/login?message=Could not authenticate user${nextPath ? `&next=${nextPath}` : ''}`);
+      console.error("Login error:", error.message);
+      return redirect(`/login?message=${encodeURIComponent(error.message)}${nextPath ? `&next=${nextPath}` : ''}`);
     }
 
     return redirect(nextPath || "/dashboard");
@@ -34,7 +35,7 @@ export default async function LoginPage(props: {
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
     const fullName = formData.get("full_name") as string;
-    const role = formData.get("role") as string;
+    const requestedRole = formData.get("role") as string;
     const nextPath = formData.get("next") as string;
     const marketingConsent = formData.get("marketing_consent") === "true";
 
@@ -48,14 +49,18 @@ export default async function LoginPage(props: {
       options: {
         data: {
           full_name: fullName,
-          role: role || "customer",
+          // If they asked to be an owner, we still force "customer" initially 
+          // but save their INTENT so admins can see it
+          role: "customer", 
+          requested_role: requestedRole, 
           marketing_consent: marketingConsent,
         },
       },
     });
 
     if (error) {
-      return redirect(`/login?message=Could not authenticate user${nextPath ? `&next=${nextPath}` : ''}`);
+      console.error("Signup error:", error.message);
+      return redirect(`/login?message=${encodeURIComponent(error.message)}${nextPath ? `&next=${nextPath}` : ''}`);
     }
 
     return redirect(nextPath || "/dashboard");
@@ -96,6 +101,7 @@ export default async function LoginPage(props: {
           required
         />
 
+        {/* Role selection - user can REQUEST to be an owner, but starts as customer until approved */}
         <div className="flex justify-center gap-6 mb-8 text-sm">
           <label className="flex items-center gap-2 text-black dark:text-zinc-300 cursor-pointer">
             <input type="radio" name="role" value="customer" defaultChecked className="accent-black dark:accent-white w-4 h-4" />
