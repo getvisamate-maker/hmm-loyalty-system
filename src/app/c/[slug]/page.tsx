@@ -104,47 +104,63 @@ export default async function CustomerPage(props: { params: Promise<{ slug: stri
   // Prevent server crash if card creation failed
   if (!card) {
     return (
-        <div className="min-h-screen bg-zinc-50 dark:bg-black flex flex-col items-center justify-center p-6 text-center text-zinc-500">
-            <h1 className="text-xl font-bold text-zinc-900 dark:text-white mb-2">Membership Issue</h1>
-            <p>Could not join the loyalty program at this time.</p>
-            <p className="text-xs mt-2 opacity-50">Please contact support or cafe staff.</p>
-            <Link href="/dashboard" className="mt-6 text-indigo-600 font-bold">Go to Dashboard</Link>
+        <div className="min-h-[100dvh] bg-black flex flex-col items-center justify-center p-6 text-center text-zinc-500 font-sans">
+            <div className="w-16 h-16 bg-zinc-900 rounded-2xl flex items-center justify-center mb-6 border border-zinc-800 shadow-xl shadow-black/50">
+                <AlertTriangle size={32} className="text-red-500" />
+            </div>
+            <h1 className="text-xl font-bold text-white mb-2">Membership Issue</h1>
+            <p className="max-w-xs mx-auto text-sm leading-relaxed mb-8">We couldn&apos;t generate your pass right now. Please show this screen to the staff.</p>
+            <Link href="/dashboard" className="w-full max-w-xs bg-white text-black font-bold py-4 rounded-xl hover:scale-[1.02] active:scale-[0.98] transition-all text-sm">
+                Return to Dashboard
+            </Link>
         </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-black flex flex-col relative text-zinc-900 dark:text-zinc-100 font-sans">
+    <div className="min-h-[100dvh] bg-[#050505] text-white font-sans overflow-hidden relative selection:bg-indigo-500/30 flex flex-col">
+      
+      {/* Dynamic Background Gradients */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+         <div className="absolute top-[-10%] left-[-20%] w-[80%] h-[60%] rounded-full bg-indigo-900/20 blur-[100px] animate-pulse" />
+         <div className="absolute bottom-[-10%] right-[-20%] w-[80%] h-[60%] rounded-full bg-blue-900/10 blur-[100px]" />
+      </div>
+
       {/* Navigation Header */}
-      <nav className="absolute top-0 left-0 w-full p-6 flex justify-between items-center z-10">
+      <nav className="relative z-50 px-6 py-6 flex justify-between items-center w-full max-w-md mx-auto">
         <Link 
           href="/dashboard" 
-          className="flex items-center gap-2 text-sm font-medium text-zinc-500 hover:text-black dark:hover:text-white transition-colors bg-white/50 dark:bg-black/50 backdrop-blur-md px-4 py-2 rounded-full border border-zinc-200 dark:border-zinc-800"
+          className="w-10 h-10 flex items-center justify-center bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full border border-white/5 transition-all text-white/80 hover:text-white hover:scale-105 active:scale-95"
         >
-          <ArrowLeft size={16} />
-          <span>Dashboard</span>
+          <ArrowLeft size={20} />
         </Link>
-        {/* Optional: Add user profile menu or standard home link here */}
+        <div className="flex flex-col items-center">
+            <span className="text-[10px] font-bold tracking-widest uppercase text-white/40">Loyalty Pass</span>
+            <span className="text-sm font-bold text-white tracking-tight">hmmLoyalty</span>
+        </div>
+        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 border border-white/10 shadow-lg shadow-indigo-500/20" />
       </nav>
 
-      <main className="flex-1 flex flex-col items-center justify-center p-6 w-full max-w-md mx-auto relative z-0">
-        <div className="w-full space-y-8 mt-12">
-          <LoyaltyCard 
-            cafeId={cafe.id}
-            cardId={card.id}
-            cafeName={cafe.name}
-            stampsRequired={cafe.stamps_required}
-            currentStamps={card?.stamp_count || 0}
-            logoUrl={cafe.logo_url}
-          />
-          
-          <DailyDelight />
+      <main className="relative z-10 flex-1 flex flex-col items-center w-full max-w-md mx-auto px-6 pb-8 pt-4">
+        <div className="w-full h-full flex flex-col justify-between">
+            <div className="space-y-6">
+                <LoyaltyCard 
+                    cafeId={cafe.id}
+                    cardId={card.id}
+                    cafeName={cafe.name}
+                    stampsRequired={cafe.stamps_required}
+                    currentStamps={card?.stamp_count || 0}
+                    logoUrl={cafe.logo_url}
+                />
+                
+                <DailyDelight />
+            </div>
 
-          <div className="text-center space-y-4">
-              <p className="text-xs text-zinc-400 font-medium">
-                  Powered by Hmm Loyalty System
-              </p>
-          </div>
+            <div className="mt-8 text-center pb-safe">
+                <p className="text-[10px] text-zinc-600 font-medium uppercase tracking-wider">
+                    Powered by Hmm Loyalty System
+                </p>
+            </div>
         </div>
       </main>
     </div>
