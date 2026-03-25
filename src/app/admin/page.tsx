@@ -5,7 +5,8 @@ import { redirect } from "next/navigation";
 import { togglePartnerStatus } from "./actions";
 import { Check, Shield, User } from "lucide-react";
 
-// ⚠️ IMPORTANT: Add your actual email here to allow access
+// ⚠️ IMPORTANT: Add your actual email here.
+// If your email is "john@example.com", the array should look like ["john@example.com"]
 const ADMIN_EMAILS = ["hiremyminutes@gmail.com"]; 
 
 export const dynamic = "force-dynamic";
@@ -18,13 +19,17 @@ export default async function AdminDashboard() {
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user || !user.email || !ADMIN_EMAILS.includes(user.email)) {
-    // If not authorized, kick them out
+    // If you see this redirect, it means your email isn't in the list above
     return redirect("/dashboard");
   }
 
   // 2. Fetch All Profiles using Admin Client (Bypasses RLS)
   if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    return <div>Error: Missing SUPABASE_SERVICE_ROLE_KEY</div>;
+    return (
+      <div className="p-8 text-red-500 font-bold">
+        Error: SUPABASE_SERVICE_ROLE_KEY is missing from Vercel Environment Variables.
+      </div>
+    );
   }
 
   const adminDb = createAdminClient(
