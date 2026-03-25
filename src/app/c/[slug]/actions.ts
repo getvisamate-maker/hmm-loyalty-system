@@ -74,11 +74,16 @@ export async function addStamp(cafeId: string, cardId: string, pin: string, path
        // In a full prod app you might use: await db.rpc('increment_rewards', { cafe_id: cafeId });
     } catch(e) {}
 
-    await db.from("stamp_logs").insert({ card_id: cardId, notes: "Reward Redeemed" }); // Assuming notes or just Insert
-
+    const { error: logError } = await db
+      .from("stamp_logs")
+      .insert({ card_id: cardId, notes: "Reward Redeemed" });
+    
+    if (logError) {
+      console.error("Redemption logging error:", logError);
+    }
+    
     revalidatePath(pathname);
     return { success: true, message: "Reward Redeemed! Card has been reset." };
-
   } else {
     // === ADD STAMP FLOW ===
     const { error: updateError } = await db
@@ -91,7 +96,13 @@ export async function addStamp(cafeId: string, cardId: string, pin: string, path
       return { success: false, message: "Could not add stamp." };
     }
 
-    await db.from("stamp_logs").insert({ card_id: cardId });
+    const { error: logError } = await db
+      .from("stamp_logs")
+      .insert({ card_id: cardId, notes: "Stamp Added" });
+
+    if (logError) {
+       console.error("Stamp logging error:", logError);
+    }
 
     revalidatePath(pathname);
     return { success: true, message: "Stamp added!" };

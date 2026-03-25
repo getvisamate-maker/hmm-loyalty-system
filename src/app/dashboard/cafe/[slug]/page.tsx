@@ -82,41 +82,53 @@ export default async function CafeManagementPage(props: {
     .in("card_id", cardIds) : { count: 0 };
 
   // 2. Calculate Real Rewards Redeemed (Count logs with redemption note)
+  // Use case-sensitive match or just "Reward Redeemed" if consistent
   const { count: totalRedeemedReal } = cardIds.length > 0 ? await analyticsClient
     .from("stamp_logs")
     .select("*", { count: "exact", head: true })
     .in("card_id", cardIds)
-    .eq("notes", "Reward Redeemed") : { count: 0 };
+    .ilike("notes", "%redeemed%") : { count: 0 };
 
-  // Fetch all stamp logs from the last 7 days for flow analytics
-  const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  // Fetch all stamp logs from the last 30 days for flow analytics
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
   
-  const { data: weeklyLogs } = cardIds.length > 0 ? await analyticsClient
+  const { data: logs } = cardIds.length > 0 ? await analyticsClient
     .from("stamp_logs")
-    .select(`created_at`)
+    .select(`created_at, notes`)
     .in("card_id", cardIds)
-    .gte("created_at", sevenDaysAgo.toISOString()) : { data: [] };
+    .gte("created_at", thirtyDaysAgo.toISOString()) : { data: [] };
 
-  // Calculate Daily Flow
+  // Calculate Daily Flow (Last 30 Days)
   const dailyFlow: Record<string, number> = {};
-  for (let i = 0; i < 7; i++) {
+  
+  // Initialize with 0s
+  for (let i = 0; i < 30; i++) {
     const d = new Date();
     d.setDate(d.getDate() - i);
-    // Explicitly use en-US to ensure matching keys regardless of server locale
-    dailyFlow[d.toLocaleDateString('en-US', { weekday: 'short' })] = 0;
+    // Use ISO date string (YYYY-MM-DD) as key for sorting
+    const key = d.toISOString().split('T')[0];
+    dailyFlow[key] = 0;
   }
   
-  weeklyLogs?.forEach((log: any) => {
-    // Explicitly use en-US to match initialization keys
-    const day = new Date(log.created_at).toLocaleDateString('en-US', { weekday: 'short' });
-    if (dailyFlow[day] !== undefined) {
-      dailyFlow[day]++;
+  logs?.forEach((log: any) => {
+    const key = new Date(log.created_at).toISOString().split('T')[0];
+    if (dailyFlow[key] !== undefined) {
+      dailyFlow[key]++;
     }
   });
 
-  const dailyFlowArray = Object.entries(dailyFlow).reverse();
-  const currentWeekCount = weeklyLogs?.length || 0;
+  const dailyFlowArray = Object.entries(dailyFlow)
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([dateStr, count]) => {
+        const date = new Date(dateStr);
+        return [
+            date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+            count
+        ] as [string, number];
+    });
+
+  const currentMonthCount = logs?.length || 0;
 
   // Fetch recent activity logs
   const { data: recentLogs } = cardIds.length > 0 ? await analyticsClient
@@ -203,15 +215,15 @@ export default async function CafeManagementPage(props: {
                 </div>
               </div>
 
-              {/* Weekly Flow Analysis */}
+              {/* Monthly Flow Analysis */}
               <div className="mt-8 pt-8 border-t border-zinc-100 dark:border-zinc-800">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-3">
                     <TrendingUp className="text-indigo-500" />
-                    <h3 className="font-bold text-zinc-900 dark:text-white">Business Flow (Last 7 Days)</h3>
+                    <h3 className="font-bold text-zinc-900 dark:text-white">Business Flow (Last 30 Days)</h3>
                   </div>
                   <span className="text-sm font-medium px-3 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-full">
-                    {currentWeekCount} Scans This Week
+                    {currentMonthCount} Scans This Month
                   </span>
                 </div>
                 
@@ -222,11 +234,11 @@ export default async function CafeManagementPage(props: {
                 
                 <p className="mt-6 text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed bg-zinc-50 dark:bg-zinc-950 p-4 rounded-xl border border-zinc-100 dark:border-zinc-800/50">
                   <strong className="text-zinc-900 dark:text-zinc-200">Analysis: </strong>
-                  {currentWeekCount > 20 
-                    ? "Great foot traffic this week! Your loyalty program is actively driving engagement. Consider sending a marketing blast to convert more regular visits."
-                    : currentWeekCount > 5 
-                      ? "Steady flow of customers. Remind your baristas to encourage customers to scan their digital loyalty cards at checkout."
-                      : "Traffic is a bit quiet. You could offer an immediate 'double stamps' day to encourage adoption and get more people carrying your card in their wallet."}
+                  {currentMonthCount > 100 
+                    ? "Fantastic engagement! Your program is a core part of your customers' routine."
+                    : currentMonthCount > 20 
+                      ? "Steady flow. Try running a 'Double Stamp' promotion to boost these numbers."
+                      : "Things are just getting started. Focus on signing up every customer at the register!"}
                 </p>
               </div>
 
