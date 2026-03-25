@@ -2,6 +2,8 @@ import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { LoyaltyCard } from "./loyalty-card";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 
 export default async function CustomerPage(props: { params: Promise<{ slug: string }> }) {
   const resolvedParams = await props.params;
@@ -53,21 +55,37 @@ export default async function CustomerPage(props: { params: Promise<{ slug: stri
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-black flex flex-col items-center justify-center p-6">
-      <div className="w-full max-w-md space-y-8">
-        <LoyaltyCard 
-          cafeName={cafe.name}
-          stampsRequired={cafe.stamps_required}
-          currentStamps={card?.stamp_count || 0}
-          logoUrl={cafe.logo_url}
-        />
-        
-        <div className="text-center">
-            <p className="text-xs text-zinc-400 font-medium">
-                Powered by Hmm Loyalty System
-            </p>
+    <div className="min-h-screen bg-zinc-50 dark:bg-black flex flex-col relative text-zinc-900 dark:text-zinc-100 font-sans">
+      {/* Navigation Header */}
+      <nav className="absolute top-0 left-0 w-full p-6 flex justify-between items-center z-10">
+        <Link 
+          href="/dashboard" 
+          className="flex items-center gap-2 text-sm font-medium text-zinc-500 hover:text-black dark:hover:text-white transition-colors bg-white/50 dark:bg-black/50 backdrop-blur-md px-4 py-2 rounded-full border border-zinc-200 dark:border-zinc-800"
+        >
+          <ArrowLeft size={16} />
+          <span>Dashboard</span>
+        </Link>
+        {/* Optional: Add user profile menu or standard home link here */}
+      </nav>
+
+      <main className="flex-1 flex flex-col items-center justify-center p-6 w-full max-w-md mx-auto relative z-0">
+        <div className="w-full space-y-8 mt-12">
+          <LoyaltyCard 
+            cafeId={cafe.id}
+            cardId={card.id}
+            cafeName={cafe.name}
+            stampsRequired={cafe.stamps_required}
+            currentStamps={card?.stamp_count || 0}
+            logoUrl={cafe.logo_url}
+          />
+          
+          <div className="text-center space-y-4">
+              <p className="text-xs text-zinc-400 font-medium">
+                  Powered by Hmm Loyalty System
+              </p>
+          </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
