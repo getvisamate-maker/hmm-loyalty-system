@@ -25,10 +25,11 @@ export default async function SettingsPage(props: {
     .eq("id", user.id)
     .single();
 
-  // Action: Update Profile Info (Full Name)
+  // Action: Update Profile Info (Full Name & Marketing)
   const updateProfile = async (formData: FormData) => {
     "use server";
     const fullName = formData.get("full_name") as string;
+    const marketingConsent = formData.get("marketing_consent") === "on";
     
     if (!fullName || fullName.trim().length === 0) {
       redirect("/dashboard/settings?error=Name cannot be empty");
@@ -42,7 +43,10 @@ export default async function SettingsPage(props: {
     if (user) {
       await supabase
         .from("profiles")
-        .update({ full_name: fullName })
+        .update({ 
+          full_name: fullName,
+          marketing_consent: marketingConsent
+        })
         .eq("id", user.id);
     }
 
@@ -139,6 +143,23 @@ export default async function SettingsPage(props: {
                   className="w-full bg-zinc-50 dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-black dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
                   required
                 />
+              </div>
+
+              <div className="flex items-center gap-3 p-4 bg-zinc-50 dark:bg-zinc-950/50 rounded-xl border border-zinc-100 dark:border-zinc-800/50 mt-4">
+                <input
+                  type="checkbox"
+                  name="marketing_consent"
+                  defaultChecked={profile?.marketing_consent}
+                  className="w-5 h-5 rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                />
+                <div>
+                  <label className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 block cursor-pointer select-none">
+                    Receive Promotional Offers
+                  </label>
+                  <p className="text-xs text-zinc-500 mt-0.5">
+                    Allow cafes where you have a loyalty card to send you special offers and discounts.
+                  </p>
+                </div>
               </div>
 
               <div className="pt-4 flex justify-end">
