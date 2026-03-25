@@ -80,6 +80,9 @@ export default async function Dashboard() {
                 </div>
                 
                 <div className="flex items-center gap-2">
+                    <Link href="/dashboard/settings" className="p-2 text-zinc-500 hover:text-black dark:hover:text-white transition-colors" title="Settings">
+                        <Settings size={20} />
+                    </Link>
                     {isAdmin && (
                         <Link href="/admin" className="p-2 text-zinc-500 hover:text-black dark:hover:text-white transition-colors" title="Admin">
                             <Shield size={20} />
@@ -103,7 +106,10 @@ export default async function Dashboard() {
         {/* Mobile Header */}
         <div className="md:hidden flex justify-between items-center p-6 pb-2">
              <h1 className="text-2xl font-bold">My Cards</h1>
-             <div className="flex gap-4">
+             <div className="flex gap-4 items-center">
+                <Link href="/dashboard/settings">
+                    <Settings className="text-zinc-400" />
+                </Link>
                 {isAdmin && <Link href="/admin"><Shield className="text-zinc-400" /></Link>}
                 <form action={async () => {
                         "use server";
