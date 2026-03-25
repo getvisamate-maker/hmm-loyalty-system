@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { QrCodeGenerator } from "./qr-generator";
-import { Users, Award, ShieldCheck, Link as LinkIcon, Gift, Activity, Image as ImageIcon, Megaphone, Settings } from "lucide-react";
+import { Users, Award, ShieldCheck, Link as LinkIcon, Gift, Activity, Image as ImageIcon, Megaphone, Settings, TrendingUp, Coffee as CoffeeIcon } from "lucide-react";
 import { LogoUpload } from "./logo-upload";
 import { CampaignForm } from "./campaign-form";
 import { CafeSettingsForm } from "./settings-form";
@@ -51,6 +51,34 @@ export default async function CafeManagementPage(props: {
   const cardIds = cards?.map((c: any) => c.id).filter(Boolean) || [];
   const userIds = cards?.map((c: any) => c.user_id).filter(Boolean) || [];
 
+  // Fetch all stamp logs from the last 7 days for flow analytics
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  
+  const { data: weeklyLogs } = cardIds.length > 0 ? await supabase
+    .from("stamp_logs")
+    .select(`created_at`)
+    .in("card_id", cardIds)
+    .gte("created_at", sevenDaysAgo.toISOString()) : { data: [] };
+
+  // Calculate Daily Flow
+  const dailyFlow: Record<string, number> = {};
+  for (let i = 0; i < 7; i++) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    dailyFlow[d.toLocaleDateString(undefined, { weekday: 'short' })] = 0;
+  }
+  
+  weeklyLogs?.forEach(log => {
+    const day = new Date(log.created_at).toLocaleDateString(undefined, { weekday: 'short' });
+    if (dailyFlow[day] !== undefined) {
+      dailyFlow[day]++;
+    }
+  });
+
+  const dailyFlowArray = Object.entries(dailyFlow).reverse();
+  const currentWeekCount = weeklyLogs?.length || 0;
+
   // Fetch recent activity logs
   const { data: recentLogs } = cardIds.length > 0 ? await supabase
     .from("stamp_logs")
@@ -72,9 +100,11 @@ export default async function CafeManagementPage(props: {
     .eq("marketing_consent", true) : { count: 0 };
 
   // Compute full customer URL
-  const publicUrl = process.env.NEXT_PUBLIC_SITE_URL 
-    ? `${process.env.NEXT_PUBLIC_SITE_URL}/c/${cafe.slug}`
-    : `http://localhost:3000/c/${cafe.slug}`;
+  // Priority: 1. Manual SITE_URL 2. Automatic Vercel URL 3. Localhost fallback
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL 
+    || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+
+  const publicUrl = `${baseUrl}/c/${cafe.slug}`;
 
   return (
     <div className="flex flex-col min-h-screen bg-zinc-50 dark:bg-black w-full p-8 font-sans">
@@ -114,11 +144,55 @@ export default async function CafeManagementPage(props: {
                 
                 <div className="bg-zinc-50 dark:bg-zinc-950 p-6 rounded-2xl border border-zinc-100 dark:border-zinc-800/50 hover:border-green-100 dark:hover:border-green-900/30 transition-colors">
                   <div className="flex items-center gap-2 text-zinc-500 dark:text-zinc-400 mb-3">
-                    <Gift size={18} />
-                    <p className="text-sm font-medium">Rewards Pending</p>
+                    <CoffeeIcon size={18} />
+                    <p className="text-sm font-medium">Coffees Given</p>
                   </div>
-                  <p className="text-4xl font-black text-green-600 dark:text-green-500">{completedCardsCount}</p>
+                  <p className="text-4xl font-black text-green-600 dark:text-green-500">{cafe.total_rewards_redeemed || 0}</p>
                 </div>
+              </div>
+
+              {/* Weekly Flow Analysis */}
+              <div className="mt-8 pt-8 border-t border-zinc-100 dark:border-zinc-800">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <TrendingUp className="text-indigo-500" />
+                    <h3 className="font-bold text-zinc-900 dark:text-white">Business Flow (Last 7 Days)</h3>
+                  </div>
+                  <span className="text-sm font-medium px-3 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-full">
+                    {currentWeekCount} Scans This Week
+                  </span>
+                </div>
+                
+                <div className="flex items-end gap-2 h-32 mt-4">
+                  {dailyFlowArray.map(([day, count], index) => {
+                    // Simple relative height calc
+                    const maxCount = Math.max(...dailyFlowArray.map(arr => arr[1]), 1);
+                    const heightPercent = Math.max((count / maxCount) * 100, 5); // 5% minimum bar height
+                    return (
+                      <div key={day} className="flex-1 flex flex-col justify-end items-center gap-2 group">
+                        <span className="text-xs font-bold text-transparent group-hover:text-zinc-400 transition-colors">
+                          {count}
+                        </span>
+                        <div 
+                          className="w-full bg-indigo-500/20 hover:bg-indigo-500 rounded-t-lg transition-all duration-300 relative"
+                          style={{ height: `${heightPercent}%` }}
+                        >
+                          {index === 6 && <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-indigo-500"></div>}
+                        </div>
+                        <span className="text-xs font-medium text-zinc-500">{day}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+                
+                <p className="mt-6 text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed bg-zinc-50 dark:bg-zinc-950 p-4 rounded-xl border border-zinc-100 dark:border-zinc-800/50">
+                  <strong className="text-zinc-900 dark:text-zinc-200">Analysis: </strong>
+                  {currentWeekCount > 20 
+                    ? "Great foot traffic this week! Your loyalty program is actively driving engagement. Consider sending a marketing blast to convert more regular visits."
+                    : currentWeekCount > 5 
+                      ? "Steady flow of customers. Remind your baristas to encourage customers to scan their digital loyalty cards at checkout."
+                      : "Traffic is a bit quiet. You could offer an immediate 'double stamps' day to encourage adoption and get more people carrying your card in their wallet."}
+                </p>
               </div>
 
               <div className="mt-8 pt-8 border-t border-zinc-100 dark:border-zinc-800">
