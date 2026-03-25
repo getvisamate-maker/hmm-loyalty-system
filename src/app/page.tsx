@@ -258,7 +258,12 @@ export default function Home() {
             <Coffee size={20} />
             <span>hmmLoyalty</span>
           </div>
-          <p className="text-zinc-600 text-sm">© {new Date().getFullYear()} hmmLoyalty. All rights reserved.</p>
+          <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8">
+            <Link href="/terms" className="text-zinc-600 hover:text-zinc-400 transition-colors text-sm font-medium">
+              Service Agreement
+            </Link>
+            <p className="text-zinc-700 text-sm">© {new Date().getFullYear()} hmmLoyalty. All rights reserved.</p>
+          </div>
         </div>
       </footer>
     </div>

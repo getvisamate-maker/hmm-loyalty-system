@@ -3,8 +3,9 @@ import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { LoyaltyCard } from "./loyalty-card";
+import { DailyDelight } from "./daily-delight";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, AlertTriangle } from "lucide-react";
 
 // Ensure page is not statically generated so auth works
 export const dynamic = "force-dynamic";
@@ -31,6 +32,20 @@ export default async function CustomerPage(props: { params: Promise<{ slug: stri
 
   if (!cafe) {
     return notFound();
+  }
+
+  // Check Status
+  if (cafe.status === 'suspended') {
+     return (
+        <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center p-6 text-center text-zinc-400">
+            <div className="w-16 h-16 bg-zinc-900 rounded-full flex items-center justify-center mb-6 border border-zinc-800">
+                <AlertTriangle size={32} className="text-amber-500" />
+            </div>
+            <h1 className="text-xl font-bold text-white mb-2">Service Temporarily Unavailable</h1>
+            <p className="max-w-xs mx-auto text-zinc-500">{cafe.name} is not accepting loyalty interactions at this moment.</p>
+            <Link href="/dashboard" className="mt-8 px-6 py-3 bg-white text-black font-bold rounded-full text-sm hover:bg-zinc-200 transition-colors">Return Home</Link>
+        </div>
+     );
   }
 
   // 3. Fetch or Create Loyalty Card
@@ -123,6 +138,8 @@ export default async function CustomerPage(props: { params: Promise<{ slug: stri
             logoUrl={cafe.logo_url}
           />
           
+          <DailyDelight />
+
           <div className="text-center space-y-4">
               <p className="text-xs text-zinc-400 font-medium">
                   Powered by Hmm Loyalty System

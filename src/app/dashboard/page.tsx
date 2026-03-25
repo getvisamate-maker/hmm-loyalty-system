@@ -21,7 +21,12 @@ export default async function Dashboard() {
     .eq("id", user.id)
     .single();
 
-  const isAdmin = user.email && (process.env.ADMIN_EMAILS || "").split(',').includes(user.email);
+  const userEmail = user.email ? user.email.toLowerCase().trim() : "";
+  const adminList = (process.env.ADMIN_EMAILS || "")
+    .split(',')
+    .map(e => e.toLowerCase().trim());
+
+  const isAdmin = userEmail && adminList.includes(userEmail);
   
   // Determine if Partner/Owner
   // We check 'is_partner' (legacy boolean) OR 'role' === 'owner' (new system)
@@ -84,7 +89,11 @@ export default async function Dashboard() {
                         <Settings size={20} />
                     </Link>
                     {isAdmin && (
-                        <Link href="/admin" className="p-2 text-zinc-500 hover:text-black dark:hover:text-white transition-colors" title="Admin">
+                        <Link 
+                            href="/admin" 
+                            className="p-2 text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors" 
+                            title="Admin Dashboard"
+                        >
                             <Shield size={20} />
                         </Link>
                     )}

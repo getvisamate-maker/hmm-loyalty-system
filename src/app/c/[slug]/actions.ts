@@ -96,7 +96,7 @@ export async function addStamp(cafeId: string, cardId: string, pin: string, path
     }
     
     revalidatePath(pathname);
-    return { success: true, message: "Reward Redeemed! Card has been reset." };
+    return { success: true, message: "Reward Redeemed! Enjoy your free coffee.", redeemed: true }; // Added redeemed flag
   } else {
     // === ADD STAMP FLOW ===
     const { error: updateError } = await db
