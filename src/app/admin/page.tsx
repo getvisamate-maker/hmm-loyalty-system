@@ -106,15 +106,15 @@ export default async function AdminDashboard() {
                         </span>
                       ) : (
                         <div className="flex flex-col gap-1 items-start">
-                           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-zinc-100 text-zinc-600 border border-zinc-200">
+                           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">
                             Customer
                           </span>
                           
                           {/* Show requested status if they asked to be an owner */}
-                          {profile.role === "owner" && !profile.is_partner && (
-                            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] uppercase font-bold bg-amber-50 text-amber-600 border border-amber-200 tracking-wide">
+                          {(profile.requested_role === "owner" || profile.role === "owner") && !profile.is_partner && (
+                            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] uppercase font-bold bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800 tracking-wide">
                               <Clock size={10} />
-                              Requested Access
+                              Review Needed
                             </span>
                           )}
                         </div>
