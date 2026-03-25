@@ -25,10 +25,10 @@ export function LoyaltyCard({ cafeId, cardId, cafeName, stampsRequired, currentS
   const isCompleted = currentStamps >= stampsRequired;
 
   useEffect(() => {
-    if (isCompleted) {
-      setCelebrate(true);
-      setShowPinPad(false);
-    }
+    // Sync local state with server state
+    setCelebrate(isCompleted);
+    // If we just completed it, hide PIN pad. If we just reset (not completed), hide it too.
+    if (!loading) setShowPinPad(false);
   }, [isCompleted]);
 
   const handlePinSubmit = async (e: React.FormEvent) => {
@@ -38,24 +38,24 @@ export function LoyaltyCard({ cafeId, cardId, cafeName, stampsRequired, currentS
     setLoading(true);
     setError("");
 
-    // Call server action
+    // Call server action (handles both Add Stamp and Redeem based on server state)
     const result = await addStamp(cafeId, cardId, pin, pathname);
     
     setLoading(false);
-    // Only clear PIN if success, so user can correct it if wrong
+    
     if (result.success) {
       setPin("");
       setShowPinPad(false);
+      // UI updates via revalidatePath automatically
     } else {
-      // Display specific error from server
       setError(result.message || "Something went wrong.");
-      setPin(""); // Clear pin to let them try again
+      setPin(""); 
     }
   };
 
   return (
     <div className="w-full max-w-md mx-auto">
-      {/* Main Card Container - Removed absolute positioning and fixed aspect ratio for better mobile support */}
+      {/* Main Card Container */}
       <div className={`transition-all duration-700 ease-in-out transform ${celebrate ? "scale-105" : ""}`}>
         
         {/* Increased contrast: lighter gradient start, lighter border */}
@@ -108,7 +108,7 @@ export function LoyaltyCard({ cafeId, cardId, cafeName, stampsRequired, currentS
             {/* Footer / Status */}
             <div className="flex items-center justify-between relative z-20 mt-6 pt-4 border-t border-white/10">
               <div className="flex flex-col">
-                <span className="text-zinc-400 text-[10px] uppercase tracking-wider block text-center">Progress</span>
+                <span className="text-zinc-400 text-[10px] uppercase tracking-wider">Progress</span>
                 <span className="text-white font-bold text-lg">
                   {currentStamps} <span className="text-zinc-500 text-sm font-normal">/ {stampsRequired}</span>
                 </span>
@@ -129,8 +129,9 @@ export function LoyaltyCard({ cafeId, cardId, cafeName, stampsRequired, currentS
           </div>
       </div>
 
-      {/* Action Area with better spacing and visuals */}
+      {/* Action Area */}
       <div className="mt-8 flex flex-col items-center w-full">
+        {/* Show 'Collect Stamp' if NOT completed and NOT showing pin pad */}
         {!isCompleted && !showPinPad && (
           <button 
             onClick={() => setShowPinPad(true)}
@@ -142,10 +143,13 @@ export function LoyaltyCard({ cafeId, cardId, cafeName, stampsRequired, currentS
           </button>
         )}
 
-        {showPinPad && !isCompleted && (
-          <div className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-2xl animate-in slide-in-from-bottom-4 duration-300">
+        {/* PIN PAD - Show if user requested it OR if celebrating (Redemption flow involves PIN) */}
+        {showPinPad && (
+          <div className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-2xl animate-in slide-in-from-bottom-4 duration-300 relative z-50">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="font-bold text-lg dark:text-white">Staff Verification</h3>
+              <h3 className="font-bold text-lg dark:text-white">
+                {isCompleted ? "Authorize Redemption" : "Staff Verification"}
+              </h3>
               <button 
                 onClick={() => setShowPinPad(false)}
                 className="bg-zinc-100 dark:bg-zinc-800 px-3 py-1 rounded-full text-xs font-medium text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
@@ -156,10 +160,12 @@ export function LoyaltyCard({ cafeId, cardId, cafeName, stampsRequired, currentS
             
             <form onSubmit={handlePinSubmit} className="space-y-6">
               <div className="space-y-3">
-                <label className="text-xs font-bold text-zinc-400 uppercase tracking-widest block text-center">Ask staff for PIN</label>
+                <label className="text-xs font-bold text-zinc-400 uppercase tracking-widest block text-center">
+                  {isCompleted ? "Staff: Enter PIN to clear card" : "Ask staff for PIN"}
+                </label>
                 <div className="relative">
                   <input 
-                    type="number" // Changed to number for mobile numeric keypad
+                    type="number"
                     inputMode="numeric"
                     pattern="[0-9]*"
                     maxLength={4}
@@ -181,14 +187,16 @@ export function LoyaltyCard({ cafeId, cardId, cafeName, stampsRequired, currentS
               <button 
                 type="submit" 
                 disabled={loading || pin.length < 4}
-                className="w-full bg-zinc-900 dark:bg-white text-white dark:text-black py-4 rounded-xl font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-[1.02] active:scale-95"
+                className={`w-full text-white dark:text-black py-4 rounded-xl font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-[1.02] active:scale-95 ${
+                  isCompleted ? "bg-green-600 dark:bg-green-400" : "bg-zinc-900 dark:bg-white"
+                }`}
               >
                 {loading ? (
                     <span className="flex items-center justify-center gap-2">
                         <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
                         Verifying...
                     </span>
-                ) : "Confirm Stamp"}
+                ) : (isCompleted ? "Redeem & Reset" : "Confirm Stamp")}
               </button>
             </form>
           </div>
@@ -196,7 +204,7 @@ export function LoyaltyCard({ cafeId, cardId, cafeName, stampsRequired, currentS
       </div>
 
       {/* Celebration Overlay for Free Coffee */}
-      {celebrate && (
+      {celebrate && !showPinPad && (
         <div className="mt-8 text-center animate-pulse">
           <div className="inline-block p-4 rounded-full bg-indigo-500/10 mb-4 border border-indigo-500/20">
             <PartyPopper className="w-8 h-8 text-indigo-400" />
@@ -205,9 +213,12 @@ export function LoyaltyCard({ cafeId, cardId, cafeName, stampsRequired, currentS
           <p className="text-zinc-500 max-w-xs mx-auto mb-6 text-sm">
             Show this screen to the barista to redeem for your free coffee reward.
           </p>
-          <div className="w-full bg-black dark:bg-white text-white dark:text-black py-4 rounded-xl font-bold flex items-center justify-center gap-2 cursor-pointer hover:opacity-90 transition-opacity">
+          <button 
+            onClick={() => setShowPinPad(true)}
+            className="w-full bg-black dark:bg-white text-white dark:text-black py-4 rounded-xl font-bold flex items-center justify-center gap-2 cursor-pointer hover:opacity-90 transition-opacity"
+          >
             Redeem Reward
-          </div>
+          </button>
         </div>
       )}
     </div>

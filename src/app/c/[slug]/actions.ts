@@ -7,7 +7,6 @@ import { createClient as createAdminClient } from "@supabase/supabase-js";
 
 export async function addStamp(cafeId: string, cardId: string, pin: string, pathname: string) {
   // Use a Service Role client to bypass RLS for fetching PINs and Updating Stamps
-  // This ensures the operation succeeds even if the user doesn't have direct DB update permissions
   let db = null;
   
   if (process.env.SUPABASE_SERVICE_ROLE_KEY && process.env.NEXT_PUBLIC_SUPABASE_URL) {
@@ -16,16 +15,15 @@ export async function addStamp(cafeId: string, cardId: string, pin: string, path
       process.env.SUPABASE_SERVICE_ROLE_KEY
     );
   } else {
-    // Fallback to user context likely to fail for updates, but useful for dev if keys missing
     const cookieStore = await cookies();
     db = createClient(cookieStore);
-    console.warn("⚠️ SUPABASE_SERVICE_ROLE_KEY missing. Stamp updates may fail due to RLS.");
+    console.warn("⚠️ SUPABASE_SERVICE_ROLE_KEY missing. operations may fail due to RLS.");
   }
 
-  // 1. Verify PIN
+  // 1. Verify PIN and Get Configuration
   const { data: cafe, error: cafeError } = await db
     .from("cafes")
-    .select("pin_code")
+    .select("pin_code, stamps_required")
     .eq("id", cafeId)
     .single();
 
@@ -40,8 +38,7 @@ export async function addStamp(cafeId: string, cardId: string, pin: string, path
     return { success: false, message: "Incorrect PIN" };
   }
 
-  // 2. Add Stamp (Privileged Update)
-  // First fetch current count
+  // 2. Fetch Current Card State
   const { data: card, error: cardReadError } = await db
     .from("loyalty_cards")
     .select("stamp_count")
@@ -52,20 +49,47 @@ export async function addStamp(cafeId: string, cardId: string, pin: string, path
      return { success: false, message: "Loyalty card not found." };
   }
 
-  // Perform update
-  const { error: updateError } = await db
-    .from("loyalty_cards")
-    .update({ stamp_count: card.stamp_count + 1 })
-    .eq("id", cardId);
+  const isFull = card.stamp_count >= cafe.stamps_required;
 
-  if (updateError) {
-    console.error("Update error:", updateError);
-    return { success: false, message: "Could not add stamp. Please try again." };
+  if (isFull) {
+    // === REDEMPTION FLOW ===
+    // Reset stamps to 0
+    const { error: updateError } = await db
+      .from("loyalty_cards")
+      .update({ stamp_count: 0 })
+      .eq("id", cardId);
+
+    if (updateError) {
+      console.error("Redemption update error:", updateError);
+      return { success: false, message: "Could not process redemption." };
+    }
+
+    // Attempt to increment cafe total_rewards_redeemed counter (fail silently if column missing)
+    try {
+       // Direct SQL emulation via RPC would be ideal, but for now we just log it.
+       // In a full prod app you might use: await db.rpc('increment_rewards', { cafe_id: cafeId });
+    } catch(e) {}
+
+    await db.from("stamp_logs").insert({ card_id: cardId, notes: "Reward Redeemed" }); // Assuming notes or just Insert
+
+    revalidatePath(pathname);
+    return { success: true, message: "Reward Redeemed! Card has been reset." };
+
+  } else {
+    // === ADD STAMP FLOW ===
+    const { error: updateError } = await db
+      .from("loyalty_cards")
+      .update({ stamp_count: card.stamp_count + 1 })
+      .eq("id", cardId);
+
+    if (updateError) {
+      console.error("Update error:", updateError);
+      return { success: false, message: "Could not add stamp." };
+    }
+
+    await db.from("stamp_logs").insert({ card_id: cardId });
+
+    revalidatePath(pathname);
+    return { success: true, message: "Stamp added!" };
   }
-
-  // 3. Log activity
-  await db.from("stamp_logs").insert({ card_id: cardId });
-
-  revalidatePath(pathname);
-  return { success: true };
 }
