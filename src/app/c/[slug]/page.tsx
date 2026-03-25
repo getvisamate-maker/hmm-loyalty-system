@@ -1,4 +1,5 @@
 import { createClient } from "@/utils/supabase/server";
+import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { LoyaltyCard } from "./loyalty-card";
@@ -42,6 +43,7 @@ export default async function CustomerPage(props: { params: Promise<{ slug: stri
 
   // Auto-join program if accessing the link
   if (!card) {
+    // Try standard insertion first
     const { data: newCard, error: insertError } = await supabase
       .from("loyalty_cards")
       .insert({
@@ -52,12 +54,35 @@ export default async function CustomerPage(props: { params: Promise<{ slug: stri
       .select()
       .single();
     
-    if (insertError) {
-        console.error("Error creating loyalty card:", insertError);
-    }
-    
     if (newCard) {
       card = newCard;
+    } else {
+      // Fallback: If RLS blocks insertion, use Admin Client to create the card
+      console.warn("Standard join failed (likely RLS), attempting admin fallback:", insertError?.message);
+      
+      if (process.env.SUPABASE_SERVICE_ROLE_KEY && process.env.NEXT_PUBLIC_SUPABASE_URL) {
+        const adminDb = createAdminClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL,
+          process.env.SUPABASE_SERVICE_ROLE_KEY,
+          { auth: { persistSession: false } }
+        );
+
+        const { data: adminCard, error: adminError } = await adminDb
+          .from("loyalty_cards")
+          .insert({
+            cafe_id: cafe.id,
+            user_id: user.id,
+            stamp_count: 0
+          })
+          .select()
+          .single();
+
+        if (adminCard) {
+          card = adminCard;
+        } else {
+          console.error("Admin join failed:", adminError);
+        }
+      }
     }
   }
 

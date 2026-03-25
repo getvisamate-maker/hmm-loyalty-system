@@ -1,4 +1,5 @@
 import { createClient } from "@/utils/supabase/server";
+import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -41,7 +42,17 @@ export default async function CafeManagementPage(props: {
     return redirect("/dashboard");
   }
 
-  // Basic analytics: How many cards exist and total stamps given
+  // Init Admin Client for Analytics (Bypasses RLS to ensure accurate stats)
+  let analyticsClient: any = supabase;
+  if (process.env.SUPABASE_SERVICE_ROLE_KEY && process.env.NEXT_PUBLIC_SUPABASE_URL) {
+    analyticsClient = createAdminClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY,
+      { auth: { persistSession: false } }
+    );
+  }
+
+  // Basic analytics: How many cards exist
   const { count: totalCustomers } = await supabase
     .from("loyalty_cards")
     .select("*", { count: "exact", head: true })
@@ -52,20 +63,28 @@ export default async function CafeManagementPage(props: {
     .select("id, stamp_count, user_id")
     .eq("cafe_id", cafe.id);
 
-  const totalStampsEver = cards?.reduce((acc, curr) => acc + curr.stamp_count, 0) || 0;
-
-  // Calculate how many customers are ready for rewards
-  const completedCardsCount = cards?.filter(card => card.stamp_count >= cafe.stamps_required).length || 0;
-
   // Let's get card IDs to fetch recent activity
   const cardIds = cards?.map((c: any) => c.id).filter(Boolean) || [];
   const userIds = cards?.map((c: any) => c.user_id).filter(Boolean) || [];
+
+  // 1. Calculate Real Total Stamps (Count logs instead of current card value)
+  const { count: totalStampsReal } = cardIds.length > 0 ? await analyticsClient
+    .from("stamp_logs")
+    .select("*", { count: "exact", head: true })
+    .in("card_id", cardIds) : { count: 0 };
+
+  // 2. Calculate Real Rewards Redeemed (Count logs with redemption note)
+  const { count: totalRedeemedReal } = cardIds.length > 0 ? await analyticsClient
+    .from("stamp_logs")
+    .select("*", { count: "exact", head: true })
+    .in("card_id", cardIds)
+    .eq("notes", "Reward Redeemed") : { count: 0 };
 
   // Fetch all stamp logs from the last 7 days for flow analytics
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
   
-  const { data: weeklyLogs } = cardIds.length > 0 ? await supabase
+  const { data: weeklyLogs } = cardIds.length > 0 ? await analyticsClient
     .from("stamp_logs")
     .select(`created_at`)
     .in("card_id", cardIds)
@@ -79,7 +98,7 @@ export default async function CafeManagementPage(props: {
     dailyFlow[d.toLocaleDateString(undefined, { weekday: 'short' })] = 0;
   }
   
-  weeklyLogs?.forEach(log => {
+  weeklyLogs?.forEach((log: any) => {
     const day = new Date(log.created_at).toLocaleDateString(undefined, { weekday: 'short' });
     if (dailyFlow[day] !== undefined) {
       dailyFlow[day]++;
@@ -90,7 +109,7 @@ export default async function CafeManagementPage(props: {
   const currentWeekCount = weeklyLogs?.length || 0;
 
   // Fetch recent activity logs
-  const { data: recentLogs } = cardIds.length > 0 ? await supabase
+  const { data: recentLogs } = cardIds.length > 0 ? await analyticsClient
     .from("stamp_logs")
     .select(`
       created_at,
@@ -102,7 +121,7 @@ export default async function CafeManagementPage(props: {
     .order("created_at", { ascending: false })
     .limit(5) : { data: [] };
 
-  // Fetch marketing opt-ins
+  // Fetch marketing opt-ins (User profile data usually accessible to owner via query, or default to 0)
   const { count: optedInCount } = userIds.length > 0 ? await supabase
     .from("profiles")
     .select("*", { count: "exact", head: true })
@@ -153,7 +172,7 @@ export default async function CafeManagementPage(props: {
                     <Award size={18} />
                     <p className="text-sm font-medium">Stamps Issued</p>
                   </div>
-                  <p className="text-4xl font-black text-indigo-600 dark:text-indigo-400">{totalStampsEver}</p>
+                  <p className="text-4xl font-black text-indigo-600 dark:text-indigo-400">{totalStampsReal || 0}</p>
                 </div>
                 
                 <div className="bg-zinc-50 dark:bg-zinc-950 p-6 rounded-2xl border border-zinc-100 dark:border-zinc-800/50 hover:border-green-100 dark:hover:border-green-900/30 transition-colors">
@@ -161,7 +180,7 @@ export default async function CafeManagementPage(props: {
                     <CoffeeIcon size={18} />
                     <p className="text-sm font-medium">Coffees Given</p>
                   </div>
-                  <p className="text-4xl font-black text-green-600 dark:text-green-500">{cafe.total_rewards_redeemed || 0}</p>
+                  <p className="text-4xl font-black text-green-600 dark:text-green-500">{totalRedeemedReal || 0}</p>
                 </div>
               </div>
 
