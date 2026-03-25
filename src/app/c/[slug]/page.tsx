@@ -5,6 +5,9 @@ import { LoyaltyCard } from "./loyalty-card";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
+// Ensure page is not statically generated so auth works
+export const dynamic = "force-dynamic";
+
 export default async function CustomerPage(props: { params: Promise<{ slug: string }> }) {
   const resolvedParams = await props.params;
   const cookieStore = await cookies();
@@ -39,7 +42,7 @@ export default async function CustomerPage(props: { params: Promise<{ slug: stri
 
   // Auto-join program if accessing the link
   if (!card) {
-    const { data: newCard } = await supabase
+    const { data: newCard, error: insertError } = await supabase
       .from("loyalty_cards")
       .insert({
         cafe_id: cafe.id,
@@ -49,9 +52,25 @@ export default async function CustomerPage(props: { params: Promise<{ slug: stri
       .select()
       .single();
     
+    if (insertError) {
+        console.error("Error creating loyalty card:", insertError);
+    }
+    
     if (newCard) {
       card = newCard;
     }
+  }
+
+  // Prevent server crash if card creation failed
+  if (!card) {
+    return (
+        <div className="min-h-screen bg-zinc-50 dark:bg-black flex flex-col items-center justify-center p-6 text-center text-zinc-500">
+            <h1 className="text-xl font-bold text-zinc-900 dark:text-white mb-2">Membership Issue</h1>
+            <p>Could not join the loyalty program at this time.</p>
+            <p className="text-xs mt-2 opacity-50">Please contact support or cafe staff.</p>
+            <Link href="/dashboard" className="mt-6 text-indigo-600 font-bold">Go to Dashboard</Link>
+        </div>
+    );
   }
 
   return (
