@@ -53,12 +53,14 @@ export default async function CafeManagementPage(props: {
   }
 
   // Basic analytics: How many cards exist
-  const { count: totalCustomers } = await supabase
+  // Use analyticsClient to bypass RLS and ensure we get ALL cards associated with this cafe
+  const { count: totalCustomers } = await analyticsClient
     .from("loyalty_cards")
     .select("*", { count: "exact", head: true })
     .eq("cafe_id", cafe.id);
 
-  const { data: cards } = await supabase
+  // Fetch all card IDs using admin permissions so our log queries contain complete data
+  const { data: cards } = await analyticsClient
     .from("loyalty_cards")
     .select("id, stamp_count, user_id")
     .eq("cafe_id", cafe.id);
@@ -95,11 +97,13 @@ export default async function CafeManagementPage(props: {
   for (let i = 0; i < 7; i++) {
     const d = new Date();
     d.setDate(d.getDate() - i);
-    dailyFlow[d.toLocaleDateString(undefined, { weekday: 'short' })] = 0;
+    // Explicitly use en-US to ensure matching keys regardless of server locale
+    dailyFlow[d.toLocaleDateString('en-US', { weekday: 'short' })] = 0;
   }
   
   weeklyLogs?.forEach((log: any) => {
-    const day = new Date(log.created_at).toLocaleDateString(undefined, { weekday: 'short' });
+    // Explicitly use en-US to match initialization keys
+    const day = new Date(log.created_at).toLocaleDateString('en-US', { weekday: 'short' });
     if (dailyFlow[day] !== undefined) {
       dailyFlow[day]++;
     }
