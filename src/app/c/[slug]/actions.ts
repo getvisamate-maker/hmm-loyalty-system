@@ -33,7 +33,7 @@ export async function addStamp(cafeId: string, cardId: string, pin: string, path
   }
   
   // Enforce PIN based on security_mode
-  if (cafe.security_mode === 'pin') {
+  if (cafe.security_mode === 'pin_code' || cafe.security_mode === 'pin') {
     const correctPin = cafe.pin_code ? String(cafe.pin_code).trim() : "1234";
     if (pin.trim() !== correctPin) {
       return { success: false, message: "Incorrect PIN" };
