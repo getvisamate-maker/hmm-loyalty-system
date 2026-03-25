@@ -42,13 +42,14 @@ export function LoyaltyCard({ cafeId, cardId, cafeName, stampsRequired, currentS
     const result = await addStamp(cafeId, cardId, pin, pathname);
     
     setLoading(false);
-    setPin("");
-
+    // Only clear PIN if success, so user can correct it if wrong
     if (result.success) {
+      setPin("");
       setShowPinPad(false);
-      // Optional: Trigger a mini confetti or success sound here
     } else {
-      setError("Incorrect PIN");
+      // Display specific error from server
+      setError(result.message || "Something went wrong.");
+      setPin(""); // Clear pin to let them try again
     }
   };
 
@@ -107,7 +108,7 @@ export function LoyaltyCard({ cafeId, cardId, cafeName, stampsRequired, currentS
             {/* Footer / Status */}
             <div className="flex items-center justify-between relative z-20 mt-6 pt-4 border-t border-white/10">
               <div className="flex flex-col">
-                <span className="text-zinc-400 text-[10px] uppercase tracking-wider">Progress</span>
+                <span className="text-zinc-400 text-[10px] uppercase tracking-wider block text-center">Progress</span>
                 <span className="text-white font-bold text-lg">
                   {currentStamps} <span className="text-zinc-500 text-sm font-normal">/ {stampsRequired}</span>
                 </span>

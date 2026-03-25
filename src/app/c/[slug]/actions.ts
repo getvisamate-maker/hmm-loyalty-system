@@ -6,90 +6,65 @@ import { revalidatePath } from "next/cache";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 
 export async function addStamp(cafeId: string, cardId: string, pin: string, pathname: string) {
-  const cookieStore = await cookies();
-  const supabase = createClient(cookieStore);
-
-  console.log(`[Stamp Action] Processing stamp for Card: ${cardId}`);
-
-  let dbPin = null;
-
-  // 1. Fetch PIN securely (Bypassing RLS with Admin Client)
-  // Normal users (customers) cannot read the 'pin_code' column due to security policies.
-  // We use the Service Role Key to verify the PIN on the server side correctly.
+  // Use a Service Role client to bypass RLS for fetching PINs and Updating Stamps
+  // This ensures the operation succeeds even if the user doesn't have direct DB update permissions
+  let db = null;
+  
   if (process.env.SUPABASE_SERVICE_ROLE_KEY && process.env.NEXT_PUBLIC_SUPABASE_URL) {
-    try {
-      const supabaseAdmin = createAdminClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL,
-        process.env.SUPABASE_SERVICE_ROLE_KEY
-      );
-      
-      const { data: adminData } = await supabaseAdmin
-        .from("cafes")
-        .select("pin_code")
-        .eq("id", cafeId)
-        .single();
-        
-      if (adminData) {
-        dbPin = adminData.pin_code;
-      }
-    } catch (e) {
-      console.error("[Stamp Action] Admin client error:", e);
-    }
+    db = createAdminClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    );
   } else {
-    // Fallback for local dev if Service Key is missing (might fail due to RLS)
-    console.warn("[Stamp Action] Missing SUPABASE_SERVICE_ROLE_KEY. RLS might block PIN verification.");
-    const { data: userLevelData } = await supabase
-      .from("cafes")
-      .select("pin_code")
-      .eq("id", cafeId)
-      .single();
-      
-    if (userLevelData) {
-      dbPin = userLevelData.pin_code;
-    }
+    // Fallback to user context likely to fail for updates, but useful for dev if keys missing
+    const cookieStore = await cookies();
+    db = createClient(cookieStore);
+    console.warn("⚠️ SUPABASE_SERVICE_ROLE_KEY missing. Stamp updates may fail due to RLS.");
   }
 
-  // Normalize for comparison (handle numbers/strings and whitespace)
-  const correctPin = dbPin ? String(dbPin).trim() : "1234";
-  const inputPin = pin.trim();
+  // 1. Verify PIN
+  const { data: cafe, error: cafeError } = await db
+    .from("cafes")
+    .select("pin_code")
+    .eq("id", cafeId)
+    .single();
 
-  // Debug Log: Check your server terminal/Vercel logs to see these values!
-  console.log(`[Stamp Action] Pin Check - User: '${inputPin}', System Expects: '${correctPin}'`);
-
-  if (inputPin !== correctPin) {
+  if (cafeError || !cafe) {
+    console.error("Cafe fetch error:", cafeError);
+    return { success: false, message: "System error: Could not verify cafe." };
+  }
+  
+  const correctPin = cafe.pin_code ? String(cafe.pin_code).trim() : "1234";
+  
+  if (pin.trim() !== correctPin) {
     return { success: false, message: "Incorrect PIN" };
   }
 
-  // 2. Add Stamp - Direct Update
-  // We first fetch the current count to ensure we increment correctly
-  const { data: card, error: cardError } = await supabase
+  // 2. Add Stamp (Privileged Update)
+  // First fetch current count
+  const { data: card, error: cardReadError } = await db
     .from("loyalty_cards")
     .select("stamp_count")
     .eq("id", cardId)
     .single();
 
-  if (cardError || !card) {
-    console.error("[Stamp Action] Card fetch error:", cardError);
-    return { success: false, message: "Card not found" };
+  if (cardReadError || !card) {
+     return { success: false, message: "Loyalty card not found." };
   }
 
-  // Update the count
-  const { error: updateError } = await supabase
+  // Perform update
+  const { error: updateError } = await db
     .from("loyalty_cards")
-    .update({ 
-      stamp_count: card.stamp_count + 1 
-    })
+    .update({ stamp_count: card.stamp_count + 1 })
     .eq("id", cardId);
 
   if (updateError) {
-    console.error("[Stamp Action] Update error:", updateError);
-    return { success: false, message: "Failed to update stamp count. Please try again." };
+    console.error("Update error:", updateError);
+    return { success: false, message: "Could not add stamp. Please try again." };
   }
 
-  // 3. Log the Activity
-  await supabase.from("stamp_logs").insert({
-    card_id: cardId,
-  });
+  // 3. Log activity
+  await db.from("stamp_logs").insert({ card_id: cardId });
 
   revalidatePath(pathname);
   return { success: true };
