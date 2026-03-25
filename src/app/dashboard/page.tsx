@@ -251,10 +251,14 @@ export default async function Dashboard() {
   // ----------------------------------------------------------------------
   // VIEW FOR PARTNERS (Approved Cafe Owners)
   // ----------------------------------------------------------------------
-  const { data: cafes } = await supabase
+  const { data: cafes, error: cafesError } = await supabase
     .from("cafes")
-    .select("*, loyalty_cards(count), stamp_logs(count)")
+    .select("*, loyalty_cards(count)") // Removed stamp_logs(count) as it has no direct relation
     .eq("owner_id", user.id);
+  
+  if (cafesError) {
+    console.error("Error fetching cafes:", cafesError);
+  }
   
   return (
     <div className="min-h-screen bg-black p-8 font-sans text-zinc-100">
