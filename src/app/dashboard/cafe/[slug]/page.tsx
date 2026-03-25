@@ -1,5 +1,5 @@
 import { createClient } from "@/utils/supabase/server";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { QrCodeGenerator } from "./qr-generator";
@@ -8,6 +8,9 @@ import { LogoUpload } from "./logo-upload";
 import { CampaignForm } from "./campaign-form";
 import { CafeSettingsForm } from "./settings-form";
 
+// Force dynamic rendering to prevent Vercel from trying to statically generate this authenticated page
+export const dynamic = "force-dynamic";
+
 export default async function CafeManagementPage(props: {
   params: Promise<{ slug: string }>;
 }) {
@@ -15,21 +18,28 @@ export default async function CafeManagementPage(props: {
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
 
+  // Safely check for user session with error handling
   const {
     data: { user },
+    error: authError
   } = await supabase.auth.getUser();
 
-  if (!user) return redirect("/login");
+  if (authError || !user) {
+    return redirect("/login");
+  }
 
   // Fetch the specific cafe
-  const { data: cafe } = await supabase
+  const { data: cafe, error: cafeError } = await supabase
     .from("cafes")
     .select("*")
     .eq("slug", resolvedParams.slug)
     .eq("owner_id", user.id)
     .single();
 
-  if (!cafe) return redirect("/dashboard");
+  if (cafeError || !cafe) {
+    // If cafe doesn't exist or isn't owned by user, go back to dashboard
+    return redirect("/dashboard");
+  }
 
   // Basic analytics: How many cards exist and total stamps given
   const { count: totalCustomers } = await supabase
@@ -99,10 +109,14 @@ export default async function CafeManagementPage(props: {
     .in("id", userIds)
     .eq("marketing_consent", true) : { count: 0 };
 
-  // Compute full customer URL
-  // Priority: 1. Manual SITE_URL 2. Automatic Vercel URL 3. Localhost fallback
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL 
-    || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+  // Compute full customer URL dynamically based on request headers
+  // This ensures the QR code works on localhost, Vercel previews, and production without config
+  const headersList = await headers();
+  const host = headersList.get("host") || "localhost:3000";
+  const protocol = headersList.get("x-forwarded-proto") === "http" ? "http" : "https";
+  
+  // Strip trailing slashes just in case
+  const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || `${protocol}://${host}`).replace(/\/$/, "");
 
   const publicUrl = `${baseUrl}/c/${cafe.slug}`;
 
