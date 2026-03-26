@@ -221,10 +221,6 @@ export default async function AdminDashboard() {
                       />
                     </section>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                      
-                      {/* Main Content Area (2 cols) */}
-                      <div className="lg:col-span-2 space-y-8">
                         
                         {/* Cafe Management */}
                         <section className="bg-zinc-900/50 border border-zinc-800 rounded-2xl overflow-hidden backdrop-blur-sm">
@@ -497,11 +493,10 @@ export default async function AdminDashboard() {
                                <div className="flex justify-between text-sm">
                                   <span className="text-zinc-400">API Latency</span>
                                   <span className="text-zinc-200 font-mono">45ms</span>
-                               </div>
+                                </div>
                             </div>
                         </section>
                       </div>
-                    </div>
       </main>
     </div>
   );
