@@ -34,7 +34,7 @@ export default async function Dashboard() {
   // But strict "Partner" access usually requires approval (is_partner = true).
   // If they are just role='owner' but not approved, we might show a "Pending" dashboard or just the customer one with a note.
   // For now, let's treat requested owners as customers until approved, to match the admin flow.
-  const isApprovedPartner = profile?.is_partner === true || isAdmin; // Allow admins to see owner view
+  const isApprovedPartner = profile?.is_partner === true; // Allow admins to see owner view
 
   // Fetch Referral Code (if any)
   const { data: referralCode } = await supabase
@@ -110,18 +110,25 @@ export default async function Dashboard() {
                 </div>
                 
                 <div className="flex items-center gap-2">
-                    <Link href="/dashboard/settings" className="p-2 text-zinc-500 hover:text-black dark:hover:text-white transition-colors" title="Settings">
-                        <Settings size={20} />
-                    </Link>
+                    {/* Show Create Cafe button for admins even in customer view */}
+                    {(isAdmin || profile?.is_partner) && (
+                        <Link href="/dashboard/new" className="text-zinc-500 hover:text-indigo-600 transition-colors" title="Create New Cafe">
+                            <Plus size={20} />
+                        </Link>
+                    )}
                     {isAdmin && (
                         <Link 
                             href="/admin" 
-                            className="p-2 text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors" 
+                            className="bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 p-2 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-colors flex items-center gap-2 font-bold text-xs"
                             title="Admin Dashboard"
                         >
-                            <Shield size={20} />
+                            <Shield size={16} />
+                            <span className="hidden sm:inline">Admin</span>
                         </Link>
                     )}
+                    <Link href="/dashboard/settings" className="p-2 text-zinc-500 hover:text-black dark:hover:text-white transition-colors" title="Settings">
+                        <Settings size={20} />
+                    </Link>
                     <form action={async () => {
                         "use server";
                         const cookieStore = await cookies();
@@ -138,13 +145,18 @@ export default async function Dashboard() {
         </header>
 
         {/* Mobile Header */}
-        <div className="md:hidden flex justify-between items-center p-6 pb-2">
+        <div className="md:hidden flex justify-between items-center p-6 pb-2 relative z-50">
              <h1 className="text-2xl font-bold">My Cards</h1>
              <div className="flex gap-4 items-center">
+                {(isAdmin || profile?.is_partner) && (
+                    <Link href="/dashboard/new" className="text-zinc-400 hover:text-black dark:hover:text-white">
+                        <Plus size={20} />
+                    </Link>
+                )}
                 <Link href="/dashboard/settings">
-                    <Settings className="text-zinc-400" />
+                    <Settings className="text-zinc-400" size={20} />
                 </Link>
-                {isAdmin && <Link href="/admin"><Shield className="text-zinc-400" /></Link>}
+                {isAdmin && <Link href="/admin"><Shield className="text-indigo-500" size={20} /></Link>}
                 <form action={async () => {
                         "use server";
                         const cookieStore = await cookies();
