@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
+import { createAdminClient } from "@/utils/supabase/admin";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -8,6 +9,7 @@ export async function createCafe(prevState: any, formData: FormData) {
   const name = formData.get("name") as string;
   const slug = formData.get("slug") as string; // Ideally sanitize this
   const stampsRequired = parseInt(formData.get("stamps_required") as string) || 10;
+  const referralCode = formData.get("referral_code") as string;
   
   if (!name || !slug) {
     return { error: "Name and Slug are required." };
@@ -22,6 +24,32 @@ export async function createCafe(prevState: any, formData: FormData) {
     return { error: "You must be logged in." };
   }
 
+  let affiliateId = null;
+
+  if (referralCode) {
+    // Validate Referral Code securely
+    const adminDb = createAdminClient();
+    const { data: codeData, error: codeError } = await adminDb
+      .from("referral_codes")
+      .select("referrer_id, id, usage_count")
+      .eq("code", referralCode.trim().toUpperCase())
+      .single();
+
+    if (codeData) {
+      affiliateId = codeData.referrer_id;
+      // Increment usage
+      await adminDb
+        .from("referral_codes")
+        .update({ usage_count: (codeData.usage_count || 0) + 1 })
+        .eq("id", codeData.id);
+    } else {
+        // Optional: Fail or proceed without affiliate? 
+        // Let's proceed but maybe warn? Or ignore invalid code.
+        // Usually better to ignore silently or show error.
+        // For simplicity, ignore invalid code.
+    }
+  }
+
   const { data, error } = await supabase
     .from("cafes")
     .insert([
@@ -29,7 +57,8 @@ export async function createCafe(prevState: any, formData: FormData) {
         name, 
         slug, 
         owner_id: user.id, 
-        stamps_required: stampsRequired 
+        stamps_required: stampsRequired,
+        affiliate_id: affiliateId // Link affiliate
       }
     ])
     .select()

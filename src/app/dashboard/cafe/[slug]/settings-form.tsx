@@ -12,6 +12,8 @@ export function CafeSettingsForm({ cafe }: { cafe: any }) {
     address: cafe.address || "",
     phone_number: cafe.phone_number || "",
     instagram_url: cafe.instagram_url || "",
+    primary_color: cafe.primary_color || "#4f46e5",
+    secondary_color: cafe.secondary_color || "#fbbf24",
     stamps_required: cafe.stamps_required,
     security_mode: cafe.security_mode || "visual",
     time_lock_hours: cafe.time_lock_hours || 2,
@@ -131,6 +133,49 @@ export function CafeSettingsForm({ cafe }: { cafe: any }) {
                />
              </div>
            </div>
+           
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+             <div>
+               <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-1">Brand Color (Primary)</label>
+               <div className="flex gap-2">
+                 <input 
+                   type="color" 
+                   name="primary_color"
+                   value={formData.primary_color}
+                   onChange={handleChange}
+                   className="h-10 w-10 p-0 border-0 rounded overflow-hidden cursor-pointer" 
+                 />
+                 <input 
+                   type="text" 
+                   name="primary_color"
+                   value={formData.primary_color}
+                   onChange={handleChange}
+                   className="flex-1 bg-zinc-50 dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-2 text-sm text-zinc-900 dark:text-white outline-none focus:border-indigo-500 transition-colors font-mono" 
+                   placeholder="#4f46e5"
+                 />
+               </div>
+             </div>
+              <div>
+               <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-1">Accent Color (Secondary)</label>
+               <div className="flex gap-2">
+                 <input 
+                   type="color" 
+                   name="secondary_color"
+                   value={formData.secondary_color}
+                   onChange={handleChange}
+                   className="h-10 w-10 p-0 border-0 rounded overflow-hidden cursor-pointer" 
+                 />
+                 <input 
+                   type="text" 
+                   name="secondary_color"
+                   value={formData.secondary_color}
+                   onChange={handleChange}
+                   className="flex-1 bg-zinc-50 dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-2 text-sm text-zinc-900 dark:text-white outline-none focus:border-indigo-500 transition-colors font-mono" 
+                   placeholder="#fbbf24"
+                 />
+               </div>
+             </div>
+           </div>
         </div>
 
         {/* Security Settings */}
@@ -144,24 +189,27 @@ export function CafeSettingsForm({ cafe }: { cafe: any }) {
               className="w-full bg-zinc-50 dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-2 text-sm text-zinc-900 dark:text-white outline-none focus:border-indigo-500 transition-colors appearance-none"
             >
               <option value="visual">Visual Confirmation (Cashier verifies screen)</option>
-              <option value="time_lock">Time Lock (1 stamp per X hours)</option>
+              <option value="time_lock">Time Lock (1 stamp per X minutes)</option>
               <option value="pin_code">Merchant PIN (Requires PIN entry)</option>
+              <option value="dynamic_qr">Staff POS Terminal (Dynamic QR Codes)</option>
             </select>
           </div>
 
           {formData.security_mode === 'time_lock' && (
             <div className="animate-in fade-in slide-in-from-top-2">
-              <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-1">Cooldown Hours</label>
+              <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-1">Cooldown Duration (Minutes)</label>
               <input 
                 type="number" 
-                name="time_lock_hours"
-                step="0.5"
-                min="0.5"
+                name="time_lock_hours" // Using same column but treating as minutes for finer control? Wait, schema said 'hours'. Let's rename UI and convert.
+                step="1"
+                min="1"
                 required
                 value={formData.time_lock_hours}
                 onChange={handleChange}
                 className="w-full bg-zinc-50 dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-2 text-sm text-zinc-900 dark:text-white outline-none focus:border-indigo-500 transition-colors" 
+                placeholder="e.g. 5 minutes"
               />
+              <p className="text-xs text-zinc-500 mt-1">Minimum time a customer must wait before getting another stamp.</p>
             </div>
           )}
 

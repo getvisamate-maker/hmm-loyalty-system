@@ -9,6 +9,8 @@ import { LogoUpload } from "./logo-upload";
 import { CampaignForm } from "./campaign-form";
 import { CafeSettingsForm } from "./settings-form";
 import { BusinessFlowChart } from "./flow-chart";
+import { FeatureLock } from "@/components/feature-lock";
+import { isFeatureEnabled, FEATURES, PlanLevel } from "@/utils/features";
 
 // Force dynamic rendering to prevent Vercel from trying to statically generate this authenticated page
 export const dynamic = "force-dynamic";
@@ -47,6 +49,9 @@ export default async function CafeManagementPage(props: {
     // If cafe doesn't exist or isn't owned by user, go back to dashboard
     return redirect("/dashboard");
   }
+
+  // Determine user's plan - default to 'standard' if missing
+  const plan: PlanLevel = (cafe.plan_level as PlanLevel) || 'standard'; 
 
   // Fetch secret PIN - owner only
   const { data: secret } = await supabase
@@ -273,22 +278,67 @@ export default async function CafeManagementPage(props: {
             </div>
 
             {/* Marketing block */}
-            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 md:p-8 shadow-sm">
-              <div className="flex items-center gap-3 mb-6">
-                <Megaphone className="text-zinc-400" />
-                <h2 className="text-xl font-bold dark:text-white tracking-tight">Audience & Marketing</h2>
-              </div>
-              <p className="text-sm text-zinc-500 mb-6 leading-relaxed">
-                Connect with customers who have opted-in to receive promotional materials when they scanned your QR code.
-              </p>
-              
-              <div className="flex flex-col md:flex-row gap-6 mb-8 items-start">
-                <div className="bg-indigo-50 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-800/30 p-6 rounded-2xl flex-1 text-center group transition-colors hover:border-indigo-200">
-                  <p className="text-4xl font-black text-indigo-600 dark:text-indigo-400 mb-2">{optedInCount || 0}</p>
-                  <p className="text-sm font-medium text-indigo-800 dark:text-indigo-300">Opted-In Customers</p>
+            <div className="relative">
+              {!isFeatureEnabled(plan, FEATURES.PROMOTIONS) && (
+                <div className="absolute inset-x-0 w-full z-10 px-6">
+                    <FeatureLock 
+                        isLocked={true} 
+                        title="Growth Feature: Promotions"
+                        description="Upgrade to the Growth plan to send marketing campaigns."
+                    >
+                         {/* Empty child just for the lock UI structure */}
+                         <div className="h-[200px]" />
+                    </FeatureLock>
                 </div>
-                <CampaignForm cafeId={cafe.id} audienceCount={optedInCount || 0} />
+              )}
+              
+              <div className={`${!isFeatureEnabled(plan, FEATURES.PROMOTIONS) ? "opacity-20 blur-sm pointer-events-none filter grayscale" : ""} bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 md:p-8 shadow-sm transition-all duration-500`}>
+                <div className="flex items-center gap-3 mb-6">
+                    <Megaphone className="text-zinc-400" />
+                    <h2 className="text-xl font-bold dark:text-white tracking-tight">Audience & Marketing</h2>
+                </div>
+                <p className="text-sm text-zinc-500 mb-6 leading-relaxed">
+                    Connect with customers who have opted-in to receive promotional materials when they scanned your QR code.
+                </p>
+                
+                <div className="flex flex-col md:flex-row gap-6 mb-8 items-start">
+                    <div className="bg-indigo-50 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-800/30 p-6 rounded-2xl flex-1 text-center group transition-colors hover:border-indigo-200">
+                    <p className="text-4xl font-black text-indigo-600 dark:text-indigo-400 mb-2">{optedInCount || 0}</p>
+                    <p className="text-sm font-medium text-indigo-800 dark:text-indigo-300">Opted-In Customers</p>
+                    </div>
+                    <CampaignForm cafeId={cafe.id} audienceCount={optedInCount || 0} />
+                </div>
               </div>
+            </div>
+
+            {/* Staff Management (Feature Placeholders) */}
+            <div className="relative">
+                {!isFeatureEnabled(plan, FEATURES.STAFF_MANAGEMENT) && (
+                     <div className="absolute inset-x-0 w-full z-10 px-6">
+                        <FeatureLock 
+                            isLocked={true} 
+                            title="Pro Feature: Staff Management"
+                            description="Upgrade to the Pro plan to add staff accounts and manage permissions."
+                        >
+                            <div className="h-[200px]" />
+                        </FeatureLock>
+                    </div>
+                )}
+                 <div className={`${!isFeatureEnabled(plan, FEATURES.STAFF_MANAGEMENT) ? "opacity-20 blur-sm pointer-events-none filter grayscale" : ""} bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 md:p-8 shadow-sm transition-all duration-500`}>
+                    <div className="flex items-center gap-3 mb-6">
+                        <Users className="text-zinc-400" />
+                        <h2 className="text-xl font-bold dark:text-white tracking-tight">Staff Accounts</h2>
+                    </div>
+                    <p className="text-sm text-zinc-500 mb-6 leading-relaxed">
+                        Add staff members to verify stamps without sharing the master PIN.
+                    </p>
+                    <div className="bg-zinc-50 dark:bg-zinc-950 p-8 rounded-2xl border border-dashed border-zinc-200 dark:border-zinc-800 text-center">
+                        <p className="text-zinc-400 text-sm">No staff accounts created yet.</p>
+                        <button className="mt-4 px-4 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg text-sm font-medium shadow-sm hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
+                            Add New Staff
+                        </button>
+                    </div>
+                 </div>
             </div>
 
             {/* Recent Activity Feed */}
@@ -338,6 +388,21 @@ export default async function CafeManagementPage(props: {
             <div className="bg-white p-5 rounded-3xl shadow-md border border-zinc-100 mb-8 max-w-[200px] w-full aspect-square flex items-center justify-center">
                <QrCodeGenerator url={publicUrl} />
             </div>
+
+            {isFeatureEnabled(plan, FEATURES.STAFF_MANAGEMENT) && (
+              <div className="w-full mb-8">
+                 <Link 
+                   href={`/dashboard/cafe/${cafe.slug}/pos`}
+                   className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold py-3 rounded-xl transition-all shadow-lg hover:shadow-indigo-500/25 active:scale-[0.98]"
+                 >
+                   <ShieldCheck size={18} />
+                   Launch POS Terminal
+                 </Link>
+                 <p className="text-[10px] text-zinc-500 mt-2 text-center">
+                   Open this on your counter tablet for secure, dynamic QR codes.
+                 </p>
+              </div>
+            )}
 
             <div className="w-full">
               <div className="flex items-center gap-2 text-xs font-bold text-zinc-500 mb-2 uppercase tracking-wider">

@@ -3,6 +3,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
+import { FEATURES, isFeatureEnabled, PlanLevel } from "@/utils/features";
 
 export async function createPromotion(cafeId: string, title: string, body: string) {
   const cookieStore = await cookies();
@@ -12,15 +13,21 @@ export async function createPromotion(cafeId: string, title: string, body: strin
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) throw new Error("Unauthorized");
 
-  // Verify ownership
+  // Verify ownership and plan
   const { data: cafe, error: cafeError } = await supabase
     .from("cafes")
-    .select("id")
+    .select("id, plan_level")
     .eq("id", cafeId)
     .eq("owner_id", user.id)
     .single();
 
   if (cafeError || !cafe) throw new Error("Unauthorized to manage this cafe");
+
+  // Check Feature Access
+  const plan = (cafe.plan_level as PlanLevel) || 'standard';
+  if (!isFeatureEnabled(plan, FEATURES.PROMOTIONS)) {
+    throw new Error(`Upgrade to Growth or Pro plan to create promotions.`);
+  }
 
   // Insert promotion
   const { error } = await supabase
@@ -44,8 +51,39 @@ export async function updateCafeSettings(cafeId: string, data: any, slug: string
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) throw new Error("Unauthorized");
 
-  // Extract sensitive fields
-  const { pin_code, ...publicData } = data;
+  // Get current plan to check feature permissions
+  const { data: cafe } = await supabase
+    .from("cafes")
+    .select("plan_level")
+    .eq("id", cafeId) 
+    .eq("owner_id", user.id)
+    .single();
+
+  if (!cafe) throw new Error("Cafe not found or unauthorized");
+
+  const plan = (cafe.plan_level as PlanLevel) || 'standard';
+
+  // Extract sensitive and restricted fields
+  const { 
+    id, 
+    owner_id, 
+    created_at, 
+    plan_level, // Prevent plan upgrade via settings
+    pin_code,   // Handled separately
+    ...publicData 
+  } = data;
+
+  // Check Custom Branding permissions
+  if (
+    (publicData.logo_url || publicData.primary_color || publicData.secondary_color) && 
+    !isFeatureEnabled(plan, FEATURES.CUSTOM_BRANDING)
+  ) {
+    // Strip branding fields if not allowed
+    delete publicData.logo_url;
+    delete publicData.primary_color;
+    delete publicData.secondary_color;
+    // Alternatively, throw error. But stripping is safer for partial updates.
+  }
 
   // Update public info
   const { error } = await supabase

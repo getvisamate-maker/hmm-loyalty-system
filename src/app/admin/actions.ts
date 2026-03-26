@@ -83,3 +83,65 @@ export async function deleteUser(userId: string) {
     return { success: false, message: "Failed to delete user" };
   }
 }
+
+export async function updateCafePlan(cafeId: string, newPlan: string) {
+  try {
+    const supabase = getAdminClient();
+    const { error } = await supabase
+      .from("cafes")
+      .update({ plan_level: newPlan })
+      .eq("id", cafeId);
+
+    if (error) throw error;
+    revalidatePath("/admin");
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating cafe plan:", error);
+    return { success: false, message: "Failed to update plan" };
+  }
+}
+
+export async function createReferralCode(email: string, code: string) {
+  try {
+    const supabase = getAdminClient();
+    
+    // 1. Find user ID by email using Admin API (because profiles usually don't have email searchable)
+    const { data: { users }, error: userError } = await supabase.auth.admin.listUsers({
+      page: 1,
+      perPage: 1000 // Increase limit to find user
+    });
+    
+    if (userError || !users) {
+       console.error("Error listing users:", userError);
+       return { success: false, message: "Failed to list users." };
+    }
+
+    const targetUser = users.find(u => u.email?.toLowerCase() === email.toLowerCase().trim());
+    
+    if (!targetUser) {
+      return { success: false, message: "User not found with that email. Ask them to sign up first." };
+    }
+    
+    const userId = targetUser.id;
+    const cleanCode = code.toUpperCase().trim();
+
+    // 2. Create Code
+    const { error } = await supabase
+      .from("referral_codes")
+      .insert({
+        referrer_id: userId,
+        code: cleanCode
+      });
+
+    if (error) {
+      if (error.code === '23505') return { success: false, message: "Code already exists." };
+      throw error;
+    }
+
+    revalidatePath("/admin");
+    return { success: true };
+  } catch (error) {
+    console.error("Error creating referral code:", error);
+    return { success: false, message: "Failed to create code" };
+  }
+}

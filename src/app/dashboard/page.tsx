@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Plus, Coffee, LogOut, Settings, QrCode, Shield, Gift, Megaphone, Users, TrendingUp, Search } from "lucide-react";
+import { ReferralBanner } from "@/components/ReferralBanner";
 
 export default async function Dashboard() {
   const cookieStore = await cookies();
@@ -35,6 +36,24 @@ export default async function Dashboard() {
   // For now, let's treat requested owners as customers until approved, to match the admin flow.
   const isApprovedPartner = profile?.is_partner === true;
 
+  // Fetch Referral Code (if any)
+  const { data: referralCode } = await supabase
+    .from("referral_codes")
+    .select("*")
+    .eq("referrer_id", user.id)
+    .single();
+
+  // If they have a code, let's get their stats
+  let affiliateStats = { activeCount: 0, revenue: 0 };
+  if (referralCode) {
+    const { count } = await supabase
+      .from("cafes")
+      .select("*", { count: 'exact', head: true })
+      .eq("affiliate_id", user.id);
+    
+    affiliateStats.activeCount = count || 0;
+  }
+  
   // ----------------------------------------------------------------------
   // VIEW FOR CUSTOMERS (and Pending Partners)
   // ----------------------------------------------------------------------
@@ -71,8 +90,14 @@ export default async function Dashboard() {
     }
 
     return (
-      <div className="min-h-screen bg-zinc-50 dark:bg-black font-sans text-zinc-900 dark:text-zinc-100 pb-20">
-        <header className="bg-white dark:bg-zinc-900/50 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800 sticky top-0 z-10 hidden md:block">
+      <div className="min-h-screen bg-zinc-50 dark:bg-black font-sans text-zinc-900 dark:text-zinc-100 pb-20 relative">
+        
+          {/* Subtle Banner Top */}
+          <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs px-4 py-2 text-center font-medium">
+             Love hmmLoyalty? <Link href="mailto:partners@hmmloyalty.com" className="underline hover:text-indigo-100">Become a Partner</Link> and earn 20% commission on referrals.
+          </div>
+  
+          <header className="bg-white dark:bg-zinc-900/50 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800 sticky top-0 z-10 hidden md:block">
             <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold shadow-indigo-500/20 shadow-lg">
@@ -258,6 +283,34 @@ export default async function Dashboard() {
                     </div>
                 </section>
              )}
+
+             {/* Join Partner Program Section - Always visible for customers */}
+             {!profile?.is_partner && (
+                <div className="max-w-md mx-auto py-8 text-center px-4">
+                    <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-500 mb-2">Want to own a loyalty app?</h2>
+                    <p className="text-zinc-500 dark:text-zinc-400 mb-6">Start your own digital loyalty business or refer cafes to earn recurring revenue.</p>
+                    <Link 
+                        href="mailto:partners@hmmloyalty.com"
+                        className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-black font-bold hover:shadow-lg hover:scale-105 transition-all w-full"
+                    >
+                        Join Partner Program <Users className="ml-2 w-4 h-4" />
+                    </Link>
+                </div>
+             )}
+
+             {/* Encourage Sign Up for Partner Program - For users who scroll to the bottom */}
+             <div className="pt-8">
+            <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-500 mb-2">Want to earn with hmmLoyalty?</h2>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-4 max-w-xs mx-auto">
+                Join our Affiliate Program. Refer cafe owners and earn 20% recurring commission on their subscription.
+            </p>
+            <Link 
+                href="mailto:partners@hmmloyalty.com?subject=Affiliate%20Program"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 font-bold hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-all shadow-sm w-full max-w-xs text-sm"
+            >
+                <Users className="w-4 h-4" /> Become a Partner
+            </Link>
+          </div>
         </main>
       </div>
     );

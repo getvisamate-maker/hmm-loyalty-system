@@ -7,7 +7,7 @@ import confetti from "canvas-confetti";
 import { addStamp } from "./actions";
 import { usePathname } from "next/navigation";
 
-const brandColor = "#4f46e5"; // Indigo-600
+const brandColor = "#4f46e5"; // Default fallback
 
 interface LoyaltyCardProps {
   cafeId: string;
@@ -16,10 +16,22 @@ interface LoyaltyCardProps {
   stampsRequired: number;
   currentStamps: number;
   logoUrl?: string;
+  primaryColor?: string; // e.g. #4f46e5
+  secondaryColor?: string; // e.g. #fbbf24
 }
 
-export function LoyaltyCard({ cafeId, cardId, cafeName, stampsRequired, currentStamps, logoUrl }: LoyaltyCardProps) {
+export function LoyaltyCard({ 
+  cafeId, 
+  cardId, 
+  cafeName, 
+  stampsRequired, 
+  currentStamps, 
+  logoUrl,
+  primaryColor = "#4f46e5",
+  secondaryColor = "#fbbf24"
+}: LoyaltyCardProps) {
   const [celebrate, setCelebrate] = useState(false);
+
   const [showPinPad, setShowPinPad] = useState(false);
   const [showRedemptionModal, setShowRedemptionModal] = useState(false);
   const [pin, setPin] = useState("");
@@ -46,14 +58,14 @@ export function LoyaltyCard({ cafeId, cardId, cafeName, stampsRequired, currentS
           angle: 60,
           spread: 55,
           origin: { x: 0 },
-          colors: [brandColor, "#ffffff", "#fbbf24"]
+          colors: [primaryColor, "#ffffff", secondaryColor]
         });
         confetti({
           particleCount: 5,
           angle: 120,
           spread: 55,
           origin: { x: 1 },
-          colors: [brandColor, "#ffffff", "#fbbf24"]
+          colors: [primaryColor, "#ffffff", secondaryColor]
         });
 
         if (Date.now() < end) {
@@ -66,7 +78,7 @@ export function LoyaltyCard({ cafeId, cardId, cafeName, stampsRequired, currentS
         particleCount: 100,
         spread: 70,
         origin: { y: 0.6 },
-        colors: [brandColor, "#ffffff", "#fbbf24"]
+        colors: [primaryColor, "#ffffff", secondaryColor]
       });
     }
   };
@@ -152,21 +164,38 @@ export function LoyaltyCard({ cafeId, cardId, cafeName, stampsRequired, currentS
       >
         
         {/* Card Component */}
-        <div className="relative w-full aspect-[4/5] bg-gradient-to-br from-zinc-800/80 to-black/80 backdrop-blur-xl rounded-[2.5rem] shadow-2xl overflow-hidden border border-white/10 flex flex-col p-8 justify-between">
+        <div 
+          className="relative w-full aspect-[4/5] bg-gradient-to-br from-zinc-800/80 to-black/80 backdrop-blur-xl rounded-[2.5rem] shadow-2xl overflow-hidden border border-white/10 flex flex-col p-8 justify-between"
+          style={{ 
+            boxShadow: `0 25px 50px -12px ${primaryColor}20` // Subtle glow of brand color
+          }}
+        >
             {/* Ambient background glows */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/30 rounded-full blur-[80px] -mr-20 -mt-20 pointer-events-none mix-blend-screen"></div>
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-fuchsia-500/30 rounded-full blur-[80px] -ml-16 -mb-16 pointer-events-none mix-blend-screen"></div>
+            <div 
+              className="absolute top-0 right-0 w-64 h-64 rounded-full blur-[80px] -mr-20 -mt-20 pointer-events-none mix-blend-screen opacity-30"
+              style={{ backgroundColor: primaryColor }}
+            ></div>
+            <div 
+              className="absolute bottom-0 left-0 w-48 h-48 rounded-full blur-[80px] -ml-16 -mb-16 pointer-events-none mix-blend-screen opacity-30"
+              style={{ backgroundColor: secondaryColor }}
+            ></div>
 
             {/* Header */}
             <div className="flex justify-between items-start relative z-20">
               <div className="flex flex-col">
                 <h1 className="text-3xl font-black text-white tracking-tighter leading-none drop-shadow-lg">{cafeName}</h1>
-                <p className="text-indigo-200 text-[10px] font-bold uppercase tracking-[0.2em] mt-2 opacity-90">Loyalty Pass</p>
+                <p 
+                  className="text-[10px] font-bold uppercase tracking-[0.2em] mt-2 opacity-90"
+                  style={{ color: `${primaryColor}aa` }} // Lighter version of primary
+                >Loyalty Pass</p>
               </div>
               {logoUrl ? (
                 <img src={logoUrl} alt={cafeName} className="w-12 h-12 rounded-full border border-white/20 bg-zinc-800 object-cover shadow-lg" />
               ) : (
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-lg border border-white/20 text-lg">
+                <div 
+                  className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold shadow-lg border border-white/20 text-lg"
+                  style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})` }}
+                >
                   {cafeName.substring(0, 1).toUpperCase()}
                 </div>
               )}
@@ -174,6 +203,7 @@ export function LoyaltyCard({ cafeId, cardId, cafeName, stampsRequired, currentS
 
             {/* Stamps Grid - Auto-fit based on stamp count */}
             <div className="flex-grow flex items-center justify-center relative z-20 py-8">
+
               <div 
                 className={`grid gap-4 w-full justify-items-center ${
                   stampsRequired <= 4 ? "grid-cols-2 max-w-[200px]" : 
@@ -197,7 +227,7 @@ export function LoyaltyCard({ cafeId, cardId, cafeName, stampsRequired, currentS
                       }}
                       className={`aspect-square w-full rounded-2xl flex items-center justify-center relative transition-all duration-300 ${
                         isStamped 
-                          ? "shadow-[0_0_20px_rgba(255,255,255,0.4)] text-indigo-600" 
+                          ? "shadow-[0_0_20px_rgba(255,255,255,0.4)]" // Removing text-indigo-600 as dynamic color is applied below
                           : "border border-white/10 text-zinc-700"
                       }`}
                     >
@@ -206,6 +236,7 @@ export function LoyaltyCard({ cafeId, cardId, cafeName, stampsRequired, currentS
                           initial={{ scale: 0, rotate: -45 }}
                           animate={{ scale: 1, rotate: 0 }}
                           transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                          style={{ color: primaryColor }}
                         >
                           <Coffee size={stampsRequired > 10 ? 14 : 20} strokeWidth={3.5} />
                         </motion.div>

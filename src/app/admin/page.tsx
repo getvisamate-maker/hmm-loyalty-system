@@ -12,9 +12,10 @@ import {
   Check,
   LayoutDashboard,
   LogOut,
-  ArrowLeft 
+  ArrowLeft,
+  TrendingUp
 } from "lucide-react";
-import { CafeStatusToggle, ApprovePartnerButton, DeleteCafeButton, DeleteUserButton } from "./client-components"; // Create this file or inline components if preferred
+import { CafeStatusToggle, ApprovePartnerButton, DeleteCafeButton, DeleteUserButton, PlanSelector, CreateReferralCodeForm } from "./client-components"; // Added CreateReferralCodeForm import
 import Link from "next/link";
 
 // ⚠️ TODO: Replace with your actual User ID if you want ID-based access
@@ -110,6 +111,40 @@ export default async function AdminDashboard() {
       //.eq("requested_role", "cafe_owner") // Optional: be specific
   ]);
 
+  // Affiliate Stats Fetch
+  const [affiliatesRaw, allAffiliatedCafes] = await Promise.all([
+    adminDb.from("referral_codes").select("*, referrer:profiles(full_name, email)"),
+    adminDb.from("cafes").select("id, status, plan_level, affiliate_id").not("affiliate_id", "is", null)
+  ]);
+
+  const affiliatesList = affiliatesRaw.data || [];
+  const affiliatedCafes = allAffiliatedCafes.data || [];
+
+  // Calculate Revenue Metrics per Affiliate
+  const affiliateMetrics = affiliatesList.map((a: any) => {
+    // Find cafes attributed to this affiliate
+    const theirCafes = affiliatedCafes.filter((c: any) => c.affiliate_id === a.referrer_id);
+    const activeCafes = theirCafes.filter((c: any) => c.status === 'active');
+    
+    let monthlyRevenue = 0;
+    
+    activeCafes.forEach((c: any) => {
+      // Dummy Pricing Model
+      if (c.plan_level === 'pro') monthlyRevenue += 299;
+      else if (c.plan_level === 'growth') monthlyRevenue += 149;
+      else monthlyRevenue += 49; // Standard
+    });
+
+    const revenueShare = monthlyRevenue * 0.20; // 20%
+    
+    return {
+      ...a,
+      active_count: activeCafes.length,
+      monthly_revenue: monthlyRevenue,
+      revenue_share: revenueShare
+    };
+  });
+
   const cafes = cafesRes.data || [];
   const totalCafes = cafesRes.count || 0;
   const newCafes = cafesNewRes.count || 0;
@@ -202,6 +237,7 @@ export default async function AdminDashboard() {
                      <tr>
                        <th className="px-6 py-3 font-medium">Name</th>
                        <th className="px-6 py-3 font-medium">Location</th>
+                       <th className="px-6 py-3 font-medium">Plan</th>
                        <th className="px-6 py-3 font-medium">Slug</th>
                        <th className="px-6 py-3 font-medium text-right">Status / Actions</th>
                      </tr>
@@ -211,6 +247,9 @@ export default async function AdminDashboard() {
                        <tr key={cafe.id} className="hover:bg-zinc-900/30 transition-colors">
                          <td className="px-6 py-4 font-medium text-white">{cafe.name}</td>
                          <td className="px-6 py-4">{cafe.location || "N/A"}</td>
+                         <td className="px-6 py-4">
+                            <PlanSelector cafeId={cafe.id} currentPlan={cafe.plan_level || 'standard'} />
+                         </td>
                          <td className="px-6 py-4 font-mono text-xs">{cafe.slug}</td>
                          <td className="px-6 py-4 text-right">
                            <div className="flex justify-end items-center gap-3">
@@ -277,6 +316,65 @@ export default async function AdminDashboard() {
                          </td>
                        </tr>
                      ))}
+                   </tbody>
+                 </table>
+               </div>
+            </section>
+
+            {/* Affiliate Payouts */}
+            <section className="bg-zinc-900/50 border border-zinc-800 rounded-2xl overflow-hidden backdrop-blur-sm">
+               <div className="px-6 py-4 border-b border-zinc-800 flex justify-between items-center bg-emerald-500/5">
+                  <h2 className="font-bold text-emerald-200 flex items-center gap-2">
+                     <TrendingUp size={18} className="text-emerald-400" />
+                     Affiliate Payouts
+                  </h2>
+                  <span className="text-xs font-mono text-zinc-500">Revenue Share (20%)</span>
+               </div>
+
+               <div className="p-6 border-b border-zinc-800 bg-emerald-900/10">
+                 <h3 className="text-sm font-bold text-emerald-300 mb-3">Assign New Affiliate Code</h3>
+                 <CreateReferralCodeForm />
+               </div>
+               
+               <div className="overflow-x-auto">
+                 <table className="w-full text-sm text-left text-zinc-400">
+                   <thead className="text-xs text-zinc-500 uppercase bg-zinc-900/50 border-b border-zinc-800">
+                     <tr>
+                       <th className="px-6 py-3 font-medium">Affiliate</th>
+                       <th className="px-6 py-3 font-medium text-center">Code</th>
+                       <th className="px-6 py-3 font-medium text-center">Active Cafes</th>
+                       <th className="px-6 py-3 font-medium text-right">Revenue</th>
+                       <th className="px-6 py-3 font-medium text-right">Commission</th>
+                     </tr>
+                   </thead>
+                   <tbody className="divide-y divide-zinc-800">
+                     {affiliateMetrics
+                        .sort((a: any, b: any) => b.revenue_share - a.revenue_share)
+                        .map((aff: any) => (
+                       <tr key={aff.id} className="hover:bg-zinc-900/30 transition-colors">
+                         <td className="px-6 py-4">
+                            <div className="font-medium text-white">{aff.referrer?.full_name || "Unknown"}</div>
+                            <div className="text-xs text-zinc-500">{aff.referrer?.email}</div>
+                         </td>
+                         <td className="px-6 py-4 text-center font-mono text-xs text-indigo-400 bg-indigo-500/10 rounded-md px-2 py-1 mx-auto w-fit">
+                            {aff.code}
+                         </td>
+                         <td className="px-6 py-4 text-center font-medium text-white">
+                            {aff.active_count}
+                         </td>
+                         <td className="px-6 py-4 text-right text-zinc-500">
+                            ${aff.monthly_revenue.toFixed(2)}
+                         </td>
+                         <td className="px-6 py-4 text-right font-bold text-emerald-400">
+                            ${aff.revenue_share.toFixed(2)}
+                         </td>
+                       </tr>
+                     ))}
+                     {affiliateMetrics.length === 0 && (
+                        <tr>
+                          <td colSpan={5} className="px-6 py-8 text-center text-zinc-600 italic">No affiliates found.</td>
+                        </tr>
+                     )}
                    </tbody>
                  </table>
                </div>

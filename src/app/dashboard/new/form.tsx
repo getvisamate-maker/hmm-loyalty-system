@@ -50,12 +50,26 @@ export function CreateCafeForm({ userId }: { userId: string }) {
             id="slug"
             required
             value={slug}
-            onChange={(e) => setSlug(e.target.value)}
-            className="flex-1 bg-transparent py-2 text-white focus:outline-none md:text-sm text-xs placeholder-zinc-600"
+            onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/\s+/g, '-'))}
+            className="w-full py-2 bg-transparent text-white focus:outline-none placeholder-zinc-600"
             placeholder="joes-coffee"
           />
         </div>
-        <p className="text-xs text-zinc-500 mt-1">This will be part of the QR code link your customers scan.</p>
+        <p className="text-xs text-zinc-500 mt-1">This will be your unique QR code URL.</p>
+      </div>
+
+      <div>
+        <label htmlFor="referral_code" className="block text-sm font-medium text-zinc-400 mb-1">
+          Referral Code (Optional)
+        </label>
+        <input
+          type="text"
+          name="referral_code"
+          id="referral_code"
+          className="w-full px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow placeholder-zinc-600 uppercase tracking-widest"
+          placeholder="FRIEND20"
+        />
+        <p className="text-xs text-zinc-500 mt-1">If a partner referred you, enter their code here.</p>
       </div>
 
       <div>

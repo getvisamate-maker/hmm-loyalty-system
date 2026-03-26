@@ -151,6 +151,8 @@ export default async function CustomerPage(props: { params: Promise<{ slug: stri
                     stampsRequired={cafe.stamps_required}
                     currentStamps={card?.stamp_count || 0}
                     logoUrl={cafe.logo_url}
+                    primaryColor={cafe.primary_color}
+                    secondaryColor={cafe.secondary_color}
                 />
                 
                 <DailyDelight />
