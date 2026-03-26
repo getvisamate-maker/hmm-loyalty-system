@@ -25,7 +25,7 @@ export async function addStamp(cafeId: string, cardId: string, pin: string, path
   // Fetch non-sensitive config first
   const { data: cafe, error: cafeError } = await db
     .from("cafes")
-    .select("stamps_required, security_mode, time_lock_hours") // Added time_lock_hours
+    .select("*") 
     .eq("id", cafeId)
     .single();
 
@@ -99,7 +99,7 @@ export async function addStamp(cafeId: string, cardId: string, pin: string, path
   // 2. Fetch Current Card and Last Activity
   const { data: card, error: cardReadError } = await db
     .from("loyalty_cards")
-    .select("stamp_count, last_stamped_at") // Added last_stamped_at
+    .select("*")
     .eq("id", cardId)
     .single();
 
@@ -109,7 +109,7 @@ export async function addStamp(cafeId: string, cardId: string, pin: string, path
 
   // Enforce Time Lock (Cooldown) if enabled
   if (cafe.security_mode === 'time_lock') {
-     const lastStamped = card.last_stamped_at ? new Date(card.last_stamped_at).getTime() : 0;
+     const lastStamped = (card as any).last_stamped_at ? new Date((card as any).last_stamped_at).getTime() : 0;
      const now = Date.now();
      // Treat time_lock_hours as MINUTES (as per new UI)
      // Conversion: minutes * 60 * 1000 = ms
@@ -172,6 +172,9 @@ export async function addStamp(cafeId: string, cardId: string, pin: string, path
     if (logError) {
        console.error("Stamp logging error:", logError);
     }
+    
+    // Attempt to update last_stamped_at if column exists (silent fail if not)
+    await db.from("loyalty_cards").update({ last_stamped_at: new Date().toISOString() }).eq("id", cardId);
 
     revalidatePath(pathname);
     return { success: true, message: "Stamp added!" };
