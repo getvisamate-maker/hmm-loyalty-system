@@ -34,7 +34,7 @@ export default async function Dashboard() {
   // But strict "Partner" access usually requires approval (is_partner = true).
   // If they are just role='owner' but not approved, we might show a "Pending" dashboard or just the customer one with a note.
   // For now, let's treat requested owners as customers until approved, to match the admin flow.
-  const isApprovedPartner = profile?.is_partner === true;
+  const isApprovedPartner = profile?.is_partner === true || isAdmin; // Allow admins to see owner view
 
   // Fetch Referral Code (if any)
   const { data: referralCode } = await supabase
