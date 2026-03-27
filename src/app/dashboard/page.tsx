@@ -2,7 +2,7 @@ import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Plus, Coffee, LogOut, Settings, QrCode, Shield, Gift, Megaphone, Users, TrendingUp, Search } from "lucide-react";
+import { Plus, Coffee, LogOut, Settings, QrCode, Shield, Gift, Megaphone, Users, TrendingUp, Search, ShieldUser } from "lucide-react";
 import { ReferralBanner } from "@/components/ReferralBanner";
 
 export default async function Dashboard() {
@@ -119,11 +119,9 @@ export default async function Dashboard() {
                     {isAdmin && (
                         <Link 
                             href="/admin" 
-                            className="bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 p-2 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-colors flex items-center gap-2 font-bold text-xs"
-                            title="Admin Dashboard"
+                            className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-3 py-1.5 rounded-full transition-colors flex items-center gap-1 shadow-md shadow-indigo-500/20"
                         >
-                            <Shield size={16} />
-                            <span className="hidden sm:inline">Admin</span>
+                            <ShieldUser size={14} /> Admin
                         </Link>
                     )}
                     <Link href="/dashboard/settings" className="p-2 text-zinc-500 hover:text-black dark:hover:text-white transition-colors" title="Settings">
@@ -186,9 +184,42 @@ export default async function Dashboard() {
                 </div>
             )}
 
-            {/* --- Loyalty Cards Section --- */}
-            <section>
-                <div className="flex items-end justify-between mb-6 hidden md:flex">
+            <div className="max-w-5xl mx-auto px-6 py-8">
+                
+                {/* Affiliate Status Banner - Rendered if they have a code */}
+                {referralCode && (
+                  <div className="mb-10 bg-gradient-to-br from-indigo-900 via-zinc-900 to-black rounded-2xl p-6 border border-indigo-500/20 shadow-xl relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 blur-3xl rounded-full pointer-events-none"></div>
+                    <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                      <div>
+                        <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
+                          <TrendingUp className="text-emerald-400" /> Your Partner Program
+                        </h2>
+                        <p className="text-zinc-400 text-sm max-w-md mb-4">
+                          Share your code with cafe owners. When they sign up, they are linked to you forever, and you earn 20% on their active subscription.
+                        </p>
+                        <div className="inline-flex items-center gap-3 bg-black/50 border border-zinc-800 rounded-lg px-4 py-2">
+                          <span className="text-zinc-500 text-xs uppercase font-bold tracking-widest">Share Code:</span>
+                          <span className="font-mono text-xl font-bold text-white tracking-widest">{referralCode.code}</span>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4 w-full md:w-auto">
+                        <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-center min-w-[120px]">
+                          <p className="text-sm font-medium text-zinc-400 mb-1">Total Uses</p>
+                          <p className="text-3xl font-bold text-white">{referralCode.usage_count || 0}</p>
+                        </div>
+                        <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-center min-w-[120px]">
+                          <p className="text-sm font-medium text-zinc-400 mb-1">Active Cafes</p>
+                          <p className="text-3xl font-bold text-emerald-400">{affiliateStats.activeCount}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Loyalty Cards Section */}
+                <div className="flex items-center justify-between mb-6 hidden md:flex">
                     <h2 className="text-xl font-bold flex items-center gap-2">
                         <Coffee className="text-indigo-500" /> 
                         Your Cards
@@ -258,7 +289,7 @@ export default async function Dashboard() {
                         </p>
                     </div>
                 )}
-            </section>
+            </div>
 
              {/* --- Promotions Section --- */}
              {promotions.length > 0 && (
@@ -367,70 +398,127 @@ export default async function Dashboard() {
               redirect("/login");
             }}>
                 <button className="px-4 py-2 bg-zinc-900 hover:bg-red-900/30 text-zinc-400 hover:text-red-400 rounded-lg text-sm font-medium transition-colors">
-                    Sign Out
+                  <LogOut size={16} />
                 </button>
             </form>
           </div>
         </div>
 
-        {/* Cafes Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {cafes?.map((cafe: any) => {
-                 // Counts might come back as array or object depending on adapter, handling array
-                 const memberCount = Array.isArray(cafe.loyalty_cards) ? cafe.loyalty_cards[0]?.count : (cafe.loyalty_cards?.count || 0);
-                 const activityCount = Array.isArray(cafe.stamp_logs) ? cafe.stamp_logs[0]?.count : (cafe.stamp_logs?.count || 0);
+        {/* Affiliate Status Banner - Rendered if partner is also an affiliate */}
+        {referralCode && (
+          <div className="mb-12 bg-gradient-to-br from-indigo-900/40 to-zinc-900/40 border border-indigo-500/20 rounded-2xl p-6 shadow-lg">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+              <div>
+                <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
+                  <TrendingUp className="text-emerald-400" /> Partner Program Link
+                </h2>
+                <div className="inline-flex items-center gap-3 mt-2">
+                  <span className="text-zinc-500 text-xs uppercase font-bold tracking-widest">Share Code:</span>
+                  <span className="font-mono text-lg font-bold text-white tracking-widest bg-black px-3 py-1 rounded-lg border border-zinc-800">{referralCode.code}</span>
+                </div>
+              </div>
+              <div className="flex gap-4">
+                <div className="bg-black/50 border border-zinc-800 rounded-xl p-4 text-center min-w-[100px]">
+                  <p className="text-xs font-medium text-zinc-500 mb-1 uppercase tracking-wider">Uses</p>
+                  <p className="text-2xl font-bold text-white">{referralCode.usage_count || 0}</p>
+                </div>
+                <div className="bg-black/50 border border-zinc-800 rounded-xl p-4 text-center min-w-[100px]">
+                  <p className="text-xs font-medium text-zinc-500 mb-1 uppercase tracking-wider">Active</p>
+                  <p className="text-2xl font-bold text-emerald-400">{affiliateStats.activeCount}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
-                return (
-                    <Link key={cafe.id} href={`/dashboard/cafe/${cafe.slug}`} className="group relative block bg-zinc-900 border border-zinc-800 hover:border-indigo-500/50 rounded-2xl p-6 transition-all hover:shadow-2xl hover:shadow-indigo-900/10">
-                        <div className="flex justify-between items-start mb-6">
-                            <div className="flex items-center gap-4">
-                                {cafe.logo_url ? (
-                                    <img src={cafe.logo_url} className="w-16 h-16 rounded-full border border-zinc-800 object-cover" />
-                                ) : (
-                                    <div className="w-16 h-16 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-500 group-hover:bg-indigo-900/20 group-hover:text-indigo-400 transition-colors">
-                                        <Coffee size={28} />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          {/* Main Content - Cafes List */}
+          <div className="lg:col-span-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {cafes?.map((cafe: any) => {
+                     // Counts might come back as array or object depending on adapter, handling array
+                     const memberCount = Array.isArray(cafe.loyalty_cards) ? cafe.loyalty_cards[0]?.count : (cafe.loyalty_cards?.count || 0);
+                     const activityCount = Array.isArray(cafe.stamp_logs) ? cafe.stamp_logs[0]?.count : (cafe.stamp_logs?.count || 0);
+
+                    return (
+                        <Link key={cafe.id} href={`/dashboard/cafe/${cafe.slug}`} className="group relative block bg-zinc-900 border border-zinc-800 hover:border-indigo-500/50 rounded-2xl p-6 transition-all hover:shadow-2xl hover:shadow-indigo-900/10">
+                            <div className="flex justify-between items-start mb-6">
+                                <div className="flex items-center gap-4">
+                                    {cafe.logo_url ? (
+                                        <img src={cafe.logo_url} className="w-16 h-16 rounded-full border border-zinc-800 object-cover" />
+                                    ) : (
+                                        <div className="w-16 h-16 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-500 group-hover:bg-indigo-900/20 group-hover:text-indigo-400 transition-colors">
+                                            <Coffee size={28} />
+                                        </div>
+                                    )}
+                                    <div>
+                                        <h2 className="text-xl font-bold text-white group-hover:text-indigo-400 transition-colors">{cafe.name}</h2>
+                                        <p className="text-sm text-zinc-500 mt-1">{cafe.address || "No address set"}</p>
                                     </div>
-                                )}
+                                </div>
+                            </div>
+                            
+                            <div className="grid grid-cols-3 gap-4 border-t border-zinc-800 pt-6">
                                 <div>
-                                    <h2 className="text-xl font-bold text-white group-hover:text-indigo-400 transition-colors">{cafe.name}</h2>
-                                    <p className="text-sm text-zinc-500 mt-1">{cafe.address || "No address set"}</p>
+                                    <div className="text-2xl font-bold text-white mb-1">
+                                        {memberCount || 0}
+                                    </div>
+                                    <div className="text-xs text-zinc-500 uppercase tracking-wider font-bold">Members</div>
+                                </div>
+                                <div>
+                                    <div className="text-2xl font-bold text-white mb-1">
+                                        {activityCount || 0}
+                                    </div>
+                                    <div className="text-xs text-zinc-500 uppercase tracking-wider font-bold">All Time</div>
+                                </div>
+                                <div className="flex justify-end items-end">
+                                    <div className="flex items-center gap-1 text-xs font-bold text-indigo-400 group-hover:translate-x-1 transition-transform">
+                                        Manage <TrendingUp size={12} />
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        
-                        <div className="grid grid-cols-3 gap-4 border-t border-zinc-800 pt-6">
-                            <div>
-                                <div className="text-2xl font-bold text-white mb-1">
-                                    {memberCount || 0}
-                                </div>
-                                <div className="text-xs text-zinc-500 uppercase tracking-wider font-bold">Members</div>
-                            </div>
-                            <div>
-                                <div className="text-2xl font-bold text-white mb-1">
-                                    {activityCount || 0}
-                                </div>
-                                <div className="text-xs text-zinc-500 uppercase tracking-wider font-bold">All Time</div>
-                            </div>
-                            <div className="flex justify-end items-end">
-                                <div className="flex items-center gap-1 text-xs font-bold text-indigo-400 group-hover:translate-x-1 transition-transform">
-                                    Manage <TrendingUp size={12} />
-                                </div>
-                            </div>
-                        </div>
-                    </Link>
-                );
-            })}
+                        </Link>
+                    );
+                })}
 
-            {/* Empty State for Partners */}
-            {(!cafes || cafes.length === 0) && (
-                 <Link href="/dashboard/new" className="border-2 border-dashed border-zinc-800 hover:border-indigo-500/50 rounded-2xl p-8 flex flex-col items-center justify-center text-center group transition-colors min-h-[220px]">
-                    <div className="w-16 h-16 bg-zinc-900 rounded-full flex items-center justify-center text-zinc-500 mb-4 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-                        <Plus size={32} />
-                    </div>
-                    <h3 className="font-bold text-white mb-1">Create your first cafe</h3>
-                    <p className="text-sm text-zinc-500">Set up your loyalty program in seconds</p>
-                 </Link>
-            )}
+                {/* Empty State for Partners */}
+                {(!cafes || cafes.length === 0) && (
+                     <Link href="/dashboard/new" className="border-2 border-dashed border-zinc-800 hover:border-indigo-500/50 rounded-2xl p-8 flex flex-col items-center justify-center text-center group transition-colors min-h-[220px]">
+                        <div className="w-16 h-16 bg-zinc-900 rounded-full flex items-center justify-center text-zinc-500 mb-4 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                            <Plus size={32} />
+                        </div>
+                        <h3 className="font-bold text-white mb-1">Create your first cafe</h3>
+                        <p className="text-sm text-zinc-500">Set up your loyalty program in seconds</p>
+                     </Link>
+                )}
+            </div>
+          </div>
+
+          {/* Sidebar - Quick Stats & Actions */}
+          <div className="hidden lg:block bg-zinc-900 rounded-2xl p-6 border border-zinc-800">
+            <h3 className="text-lg font-bold mb-4">Quick Stats</h3>
+            <div className="space-y-4">
+                <div className="flex justify-between text-sm font-medium">
+                    <span className="text-zinc-500">Total Cafes</span>
+                    <span className="text-white">{cafes?.length || 0}</span>
+                </div>
+                <div className="flex justify-between text-sm font-medium">
+                    <span className="text-zinc-500">Total Members</span>
+                    <span className="text-white">{cafes?.reduce((acc: number, cafe: any) => acc + (Array.isArray(cafe.loyalty_cards) ? cafe.loyalty_cards[0]?.count : (cafe.loyalty_cards?.count || 0)), 0) || 0}</span>
+                </div>
+                <div className="flex justify-between text-sm font-medium">
+                    <span className="text-zinc-500">All Time Activity</span>
+                    <span className="text-white">{cafes?.reduce((acc: number, cafe: any) => acc + (Array.isArray(cafe.stamp_logs) ? cafe.stamp_logs[0]?.count : (cafe.stamp_logs?.count || 0)), 0) || 0}</span>
+                </div>
+            </div>
+
+            <div className="mt-6">
+                <Link href="/dashboard/new" className="block w-full text-center bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded-lg transition-colors">
+                    + Add New Cafe
+                </Link>
+            </div>
+          </div>
         </div>
       </div>
     </div>

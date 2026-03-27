@@ -120,7 +120,7 @@ export default async function AdminDashboard(props: {
 
   // Affiliate Stats Fetch
   const [affiliatesRaw, allAffiliatedCafes] = await Promise.all([
-    adminDb.from("referral_codes").select("*, referrer:profiles(full_name, email)"),
+    adminDb.from("referral_codes").select("*, referrer:profiles(full_name)"),
     adminDb.from("cafes").select("id, status, plan_level, affiliate_id").not("affiliate_id", "is", null)
   ]);
 

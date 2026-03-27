@@ -37,6 +37,9 @@ export default function AuthForm({ message, next }: { message?: string, next?: s
         action={isLogin ? signIn : signUp}
         className="animate-in flex-1 flex flex-col w-full justify-center gap-2 text-foreground"
       >
+        {/* Hidden submit button to grab 'Enter' key presses strictly for main login/signup action FIRST */}
+        <button type="submit" className="hidden" aria-hidden="true"></button>
+
         <h1 className="text-3xl font-bold mb-6 text-center text-black dark:text-white">
           {isLogin ? "Sign In" : "Create Account"}
         </h1>
@@ -133,9 +136,6 @@ export default function AuthForm({ message, next }: { message?: string, next?: s
             </div>
           </div>
         )}
-        
-        {/* Hidden submit button to grab 'Enter' key presses strictly for login/signup */}
-        <button type="submit" className="hidden" aria-hidden="true"></button>
         
         <button
           onClick={() => {}}
