@@ -228,7 +228,7 @@ export default async function Dashboard() {
                         <Coffee className="text-indigo-500" /> 
                         Your Cards
                     </h2>
-                     <Link href="/" className="text-xs font-bold text-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 px-3 py-1.5 rounded-full hover:bg-indigo-100 transition-colors">
+                     <Link href="/scan" className="text-xs font-bold text-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 px-3 py-1.5 rounded-full hover:bg-indigo-100 transition-colors">
                         Scan Code
                     </Link>
                 </div>
@@ -273,7 +273,7 @@ export default async function Dashboard() {
                              );
                         })}
                          {/* Scan New Card - Mobile friendly card */}
-                         <Link href="/" className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-2xl text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-700 hover:text-indigo-500 transition-colors cursor-pointer group min-h-[160px]">
+                         <Link href="/scan" className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-2xl text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-700 hover:text-indigo-500 transition-colors cursor-pointer group min-h-[160px]">
                             <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800/50 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/20">
                                 <QrCode size={24} />
                             </div>
