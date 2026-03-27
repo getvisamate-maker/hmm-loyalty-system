@@ -62,11 +62,15 @@ export async function signUp(formData: FormData) {
     },
   };
 
-  const { error } = await supabase.auth.signUp(authData);
+  const { data, error } = await supabase.auth.signUp(authData);
 
   if (error) {
     console.error("Signup error:", error.message);
     return redirect(`/login?message=${encodeURIComponent(error.message)}${nextPath ? `&next=${nextPath}` : ''}`);
+  }
+
+  if (!data?.session) {
+    return redirect(`/login?message=${encodeURIComponent("Account created! Please check your email to verify your account before logging in.")}${nextPath ? `&next=${nextPath}` : ''}`);
   }
 
   return redirect(nextPath || "/dashboard");
