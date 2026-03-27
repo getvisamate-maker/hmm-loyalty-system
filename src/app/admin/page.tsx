@@ -195,7 +195,7 @@ export default async function AdminDashboard() {
         </div>
       </header>
 
-      <main className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 w-full">
                 {/* Stats & Charts */}
                 <div className="lg:col-span-2 space-y-8">
                     

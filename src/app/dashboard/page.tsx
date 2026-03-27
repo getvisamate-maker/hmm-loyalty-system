@@ -34,7 +34,7 @@ export default async function Dashboard() {
   // But strict "Partner" access usually requires approval (is_partner = true).
   // If they are just role='owner' but not approved, we might show a "Pending" dashboard or just the customer one with a note.
   // For now, let's treat requested owners as customers until approved, to match the admin flow.
-  const isApprovedPartner = profile?.is_partner === true; // Allow admins to see owner view
+  const isApprovedPartner = profile?.is_partner === true || profile?.role === 'cafe_owner' || profile?.role === 'super_admin'; // Allow admins to see owner view
 
   // Fetch Referral Code (if any)
   const { data: referralCode } = await supabase
@@ -99,7 +99,7 @@ export default async function Dashboard() {
   
           <header className="bg-white dark:bg-zinc-900/50 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800 sticky top-0 z-10 hidden md:block">
             <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center flex-wrap gap-3">
                     <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold shadow-indigo-500/20 shadow-lg">
                         {profile?.full_name ? profile.full_name[0].toUpperCase() : "U"}
                     </div>
@@ -111,7 +111,7 @@ export default async function Dashboard() {
                 
                 <div className="flex items-center gap-2">
                     {/* Show Create Cafe button for admins even in customer view */}
-                    {(isAdmin || profile?.is_partner) && (
+                    {(isAdmin || isApprovedPartner) && (
                         <Link href="/dashboard/new" className="text-zinc-500 hover:text-indigo-600 transition-colors" title="Create New Cafe">
                             <Plus size={20} />
                         </Link>
@@ -148,7 +148,7 @@ export default async function Dashboard() {
         <div className="md:hidden flex justify-between items-center p-6 pb-2 relative z-50">
              <h1 className="text-2xl font-bold">My Cards</h1>
              <div className="flex gap-4 items-center">
-                {(isAdmin || profile?.is_partner) && (
+                {(isAdmin || isApprovedPartner) && (
                     <Link href="/dashboard/new" className="text-zinc-400 hover:text-black dark:hover:text-white">
                         <Plus size={20} />
                     </Link>

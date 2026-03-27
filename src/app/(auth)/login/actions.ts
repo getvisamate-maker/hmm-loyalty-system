@@ -70,7 +70,7 @@ export async function signUp(formData: FormData) {
   }
 
   if (!data?.session) {
-    return redirect(`/login?message=${encodeURIComponent("Account created! Please check your email to verify your account before logging in.")}${nextPath ? `&next=${nextPath}` : ''}`);
+    return redirect(`/login?message=${encodeURIComponent("This account might already exist. Please try signing in instead.")}${nextPath ? `&next=${nextPath}` : ''}`);
   }
 
   return redirect(nextPath || "/dashboard");
