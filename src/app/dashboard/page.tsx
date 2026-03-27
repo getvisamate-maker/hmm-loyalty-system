@@ -45,7 +45,9 @@ export default async function Dashboard() {
     .from("referral_codes")
     .select("*")
     .eq("referrer_id", user.id)
-    .single();
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
 
   // If they have a code, let's get their stats
   let affiliateStats = { activeCount: 0, revenue: 0 };

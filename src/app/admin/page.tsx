@@ -109,7 +109,7 @@ export default async function AdminDashboard(props: {
         card_id,
         notes,
         loyalty_cards (
-            user:profiles ( full_name, email ),
+            user:profiles ( full_name ),
             cafe:cafes ( name )
         )
       `)
@@ -123,16 +123,32 @@ export default async function AdminDashboard(props: {
   ]);
 
   // Affiliate Stats Fetch
-  const [affiliatesRaw, allAffiliatedCafes] = await Promise.all([
+  const [affiliatesRaw, allAffiliatedCafes, authUsersList] = await Promise.all([
     adminDb.from("referral_codes").select("*, referrer:profiles(full_name)"),
-    adminDb.from("cafes").select("id, status, plan_level, affiliate_id").not("affiliate_id", "is", null)
+    adminDb.from("cafes").select("id, status, plan_level, affiliate_id").not("affiliate_id", "is", null),
+    adminDb.auth.admin.listUsers().then(res => res.data.users)
   ]);
+
+  const emailMap = new Map(authUsersList.map(u => [u.id, u.email]));
 
   const affiliatesList = affiliatesRaw.data || [];
   const affiliatedCafes = allAffiliatedCafes.data || [];
 
+  // Group affiliates by user to prevent duplicate rows if a user has multiple codes
+  const uniqueAffiliatesMap = new Map();
+  affiliatesList.forEach((a: any) => {
+    if (!uniqueAffiliatesMap.has(a.referrer_id)) {
+      uniqueAffiliatesMap.set(a.referrer_id, {
+        ...a,
+        codes: [a.code]
+      });
+    } else {
+      uniqueAffiliatesMap.get(a.referrer_id).codes.push(a.code);
+    }
+  });
+
   // Calculate Revenue Metrics per Affiliate
-  const affiliateMetrics = affiliatesList.map((a: any) => {
+  const affiliateMetrics = Array.from(uniqueAffiliatesMap.values()).map((a: any) => {
     // Find cafes attributed to this affiliate
     const theirCafes = affiliatedCafes.filter((c: any) => c.affiliate_id === a.referrer_id);
     const activeCafes = theirCafes.filter((c: any) => c.status === 'active');
@@ -147,9 +163,14 @@ export default async function AdminDashboard(props: {
     });
 
     const revenueShare = monthlyRevenue * 0.20; // 20%
+    const userEmail = emailMap.get(a.referrer_id) || "No email";
     
     return {
       ...a,
+      referrer: {
+          ...a.referrer,
+          email: userEmail
+      },
       active_count: activeCafes.length,
       monthly_revenue: monthlyRevenue,
       revenue_share: revenueShare
@@ -168,7 +189,10 @@ export default async function AdminDashboard(props: {
   const newStamps = stampsNewRes.count || 0;
 
   const activities = activityRes.data || [];
-  const pendingPartners = partnersRes.data || [];
+  const pendingPartners = (partnersRes.data || []).map((p: any) => ({
+    ...p,
+    email: emailMap.get(p.id) || "No email"
+  }));
 
   // Calculate MRR
   let mrr = 0;
@@ -581,9 +605,13 @@ export default async function AdminDashboard(props: {
                           <div className="text-xs text-zinc-500 mt-0.5">{aff.referrer?.email || "No email linked"}</div>
                        </td>
                        <td className="px-6 py-4">
-                          <div className="inline-flex items-center gap-2 bg-zinc-950 border border-zinc-700 px-3 py-1.5 rounded-lg group hover:border-emerald-500/50 transition-colors">
-                            <span className="font-mono text-emerald-400 font-bold tracking-widest">{aff.code}</span>
-                          </div>
+                          <div className="flex flex-col gap-1">
+            {aff.codes.map((code: string) => (
+                <div key={code} className="inline-flex items-center gap-2 bg-zinc-950 border border-zinc-700 px-3 py-1.5 rounded-lg group hover:border-emerald-500/50 transition-colors w-max">
+                  <span className="font-mono text-emerald-400 font-bold tracking-widest">{code}</span>
+                </div>
+            ))}
+          </div>
                           <div className="text-[10px] text-zinc-600 mt-1">Created: {new Date(aff.created_at).toLocaleDateString()}</div>
                        </td>
                        <td className="px-6 py-4 text-center">
