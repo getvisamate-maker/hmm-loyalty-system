@@ -18,11 +18,19 @@ export default async function NewCafePage() {
   // 1. PARTNER CHECK: Security Enforcement
   const { data: profile } = await supabase
     .from("profiles")
-    .select("is_partner")
+    .select("is_partner, role")
     .eq("id", user.id)
     .single();
 
-  if (!profile?.is_partner) {
+  const userEmail = user.email ? user.email.toLowerCase().trim() : "";
+  const adminList = (process.env.ADMIN_EMAILS || "")
+    .split(',')
+    .map(e => e.toLowerCase().trim());
+  const isAdmin = userEmail && adminList.includes(userEmail);
+
+  const isApprovedPartner = profile?.is_partner === true || profile?.role === 'cafe_owner' || profile?.role === 'super_admin' || isAdmin;
+
+  if (!isApprovedPartner) {
     // If not a partner, they cannot access this page. Redirect to dashboard (which handles customer view)
     return redirect("/dashboard");
   }

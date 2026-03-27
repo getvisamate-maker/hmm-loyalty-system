@@ -24,11 +24,28 @@ export async function createCafe(prevState: any, formData: FormData) {
     return { error: "You must be logged in." };
   }
 
+  // PARTNER / ADMIN CHECK
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("is_partner, role")
+    .eq("id", user.id)
+    .single();
+
+  const userEmail = user.email ? user.email.toLowerCase().trim() : "";
+  const adminList = (process.env.ADMIN_EMAILS || "").split(',').map(e => e.toLowerCase().trim());
+  const isAdmin = userEmail && adminList.includes(userEmail);
+  const isApprovedPartner = profile?.is_partner === true || profile?.role === 'cafe_owner' || profile?.role === 'super_admin' || isAdmin;
+
+  if (!isApprovedPartner) {
+    return { error: "You do not have permission to create a cafe." };
+  }
+
   let affiliateId = null;
+
+  const adminDb = createAdminClient();
 
   if (referralCode) {
     // Validate Referral Code securely
-    const adminDb = createAdminClient();
     const { data: codeData, error: codeError } = await adminDb
       .from("referral_codes")
       .select("referrer_id, id, usage_count")
@@ -50,17 +67,20 @@ export async function createCafe(prevState: any, formData: FormData) {
     }
   }
 
-  const { data, error } = await supabase
+  const cafePayload: any = { 
+    name, 
+    slug, 
+    owner_id: user.id, 
+    stamps_required: stampsRequired
+  };
+
+  if (affiliateId) {
+    cafePayload.affiliate_id = affiliateId;
+  }
+
+  const { data, error } = await adminDb
     .from("cafes")
-    .insert([
-      { 
-        name, 
-        slug, 
-        owner_id: user.id, 
-        stamps_required: stampsRequired,
-        affiliate_id: affiliateId // Link affiliate
-      }
-    ])
+    .insert([cafePayload])
     .select()
     .single();
 

@@ -34,7 +34,7 @@ export default async function Dashboard() {
   // But strict "Partner" access usually requires approval (is_partner = true).
   // If they are just role='owner' but not approved, we might show a "Pending" dashboard or just the customer one with a note.
   // For now, let's treat requested owners as customers until approved, to match the admin flow.
-  const isApprovedPartner = profile?.is_partner === true || profile?.role === 'cafe_owner' || profile?.role === 'super_admin'; // Allow admins to see owner view
+  const isApprovedPartner = profile?.is_partner === true || profile?.role === 'cafe_owner' || profile?.role === 'super_admin' || isAdmin; // Allow admins to see owner view
 
   // Fetch Referral Code (if any)
   const { data: referralCode } = await supabase
@@ -172,7 +172,7 @@ export default async function Dashboard() {
         <main className="max-w-5xl mx-auto px-6 py-6 md:py-8 space-y-12">
             
             {/* Pending Partner Notice */}
-            {profile?.role === 'owner' && !profile?.is_partner && (
+            {['owner', 'cafe_owner'].includes(profile?.requested_role) && !profile?.is_partner && (
                 <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-4 rounded-xl flex items-start gap-3">
                     <div className="bg-amber-100 dark:bg-amber-800/40 p-2 rounded-lg text-amber-600 dark:text-amber-400">
                         <Coffee size={20} />

@@ -22,6 +22,7 @@ export async function approvePartner(userId: string) {
       .from("profiles")
       .update({ 
         role: 'cafe_owner',
+        is_partner: true, // Legacy boolean needed for RLS
         requested_role: null // Clear request so they don't show up again
       })
       .eq("id", userId);

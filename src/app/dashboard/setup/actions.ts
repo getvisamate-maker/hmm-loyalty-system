@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
+import { createAdminClient } from "@/utils/supabase/admin";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -24,6 +25,23 @@ export async function createCafe(prevState: any, formData: FormData) {
       return { success: false, message: "Unauthorized" };
     }
 
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("is_partner, role")
+      .eq("id", user.id)
+      .single();
+
+    const userEmail = user.email ? user.email.toLowerCase().trim() : "";
+    const adminList = (process.env.ADMIN_EMAILS || "").split(',').map(e => e.toLowerCase().trim());
+    const isAdmin = userEmail && adminList.includes(userEmail);
+    const isApprovedPartner = profile?.is_partner === true || profile?.role === 'cafe_owner' || profile?.role === 'super_admin' || isAdmin;
+
+    if (!isApprovedPartner) {
+      return { success: false, message: "You do not have permission to create a cafe." };
+    }
+
+    const adminDb = createAdminClient();
+
     // Upload Logo if present
     if (file && file.size > 0) {
       const fileExt = file.name.split('.').pop();
@@ -46,7 +64,7 @@ export async function createCafe(prevState: any, formData: FormData) {
     }
 
     // Insert Cafe
-    const { data: cafeData, error } = await supabase
+    const { data: cafeData, error } = await adminDb
       .from("cafes")
       .insert({
         owner_id: user.id,
@@ -69,7 +87,7 @@ export async function createCafe(prevState: any, formData: FormData) {
     }
 
     // Insert Secret PIN
-    const { error: secretError } = await supabase
+    const { error: secretError } = await adminDb
       .from("cafe_secrets")
       .insert({
         cafe_id: cafeData.id,
@@ -80,7 +98,7 @@ export async function createCafe(prevState: any, formData: FormData) {
       console.error("Secret insert error:", secretError);
       // Clean up cafe if secret fails? ideally transaction, but for now just warn
       // or try to delete the cafe to prevent partial state
-      await supabase.from("cafes").delete().eq("id", cafeData.id);
+      await adminDb.from("cafes").delete().eq("id", cafeData.id);
       return { success: false, message: "Failed to set security PIN. Please try again." };
     }
 

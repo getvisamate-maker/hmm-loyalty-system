@@ -15,8 +15,10 @@ import { isFeatureEnabled, FEATURES, PlanLevel } from "@/utils/features";
 // Force dynamic rendering to prevent Vercel from trying to statically generate this authenticated page
 export const dynamic = "force-dynamic";
 
-// ⚠️ Add your admin email here to see the button
-const ADMIN_EMAILS = ["bhattey@example.com", "your-email@example.com"];
+// ⚠️ Load from environment variable for security
+const ADMIN_EMAILS = process.env.ADMIN_EMAILS 
+  ? process.env.ADMIN_EMAILS.split(',').map(e => e.trim().toLowerCase()) 
+  : [];
 
 export default async function CafeManagementPage(props: {
   params: Promise<{ slug: string }>;
@@ -35,15 +37,21 @@ export default async function CafeManagementPage(props: {
     return redirect("/login");
   }
 
-  const isAdmin = user.email && ADMIN_EMAILS.includes(user.email);
+  const userEmail = user.email ? user.email.toLowerCase() : "";
+  const isAdmin = userEmail && ADMIN_EMAILS.includes(userEmail);
 
-  // Fetch the specific cafe
-  const { data: cafe, error: cafeError } = await supabase
+  // Initialize query
+  let query = supabase
     .from("cafes")
     .select("*")
-    .eq("slug", resolvedParams.slug)
-    .eq("owner_id", user.id)
-    .single();
+    .eq("slug", resolvedParams.slug);
+
+  // If not admin, enforce ownership
+  if (!isAdmin) {
+    query = query.eq("owner_id", user.id);
+  }
+
+  const { data: cafe, error: cafeError } = await query.single();
 
   if (cafeError || !cafe) {
     // If cafe doesn't exist or isn't owned by user, go back to dashboard
