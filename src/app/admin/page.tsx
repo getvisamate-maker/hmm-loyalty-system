@@ -17,14 +17,18 @@ import {
 } from "lucide-react";
 import { CafeStatusToggle, ApprovePartnerButton, DeleteCafeButton, DeleteUserButton, PlanSelector, CreateReferralCodeForm } from "./client-components"; // Added CreateReferralCodeForm import
 import Link from "next/link";
+import { Star, ScanLine, Target, Mail } from "lucide-react";
+import { ReferralBanner } from "@/components/ReferralBanner";
+
+// Force Next.js to always render this page dynamically so affiliate stats and metrics are never stale
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 // ⚠️ TODO: Replace with your actual User ID if you want ID-based access
 const SUPER_ADMIN_ID = "replace-with-your-uuid"; 
 const ADMIN_EMAILS = process.env.ADMIN_EMAILS 
   ? process.env.ADMIN_EMAILS.split(',').map(e => e.trim().toLowerCase()) 
   : [];
-
-export const dynamic = "force-dynamic";
 
 export default async function AdminDashboard(props: {
   searchParams: Promise<{ tab?: string }>;
@@ -280,7 +284,8 @@ export default async function AdminDashboard(props: {
                          Live Feed
                       </h2>
                       <span className="text-xs font-mono text-zinc-500 flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Tracking
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        Tracking
                       </span>
                    </div>
                    
