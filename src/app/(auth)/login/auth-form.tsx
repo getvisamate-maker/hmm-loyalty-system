@@ -75,8 +75,8 @@ export default function AuthForm({ message, next }: { message?: string, next?: s
             Password
           </label>
           <button
-            type="submit"
             formAction={resetPassword}
+            formNoValidate
             className="text-xs text-zinc-500 hover:text-black dark:hover:text-white underline underline-offset-4"
           >
             Forgot Password?
@@ -134,7 +134,11 @@ export default function AuthForm({ message, next }: { message?: string, next?: s
           </div>
         )}
         
+        {/* Hidden submit button to grab 'Enter' key presses strictly for login/signup */}
+        <button type="submit" className="hidden" aria-hidden="true"></button>
+        
         <button
+          onClick={() => {}}
           className="bg-black dark:bg-white text-white dark:text-black rounded-xl px-4 py-3 text-foreground mb-4 font-bold active:scale-95 transition-transform"
         >
           {isLogin ? "Sign In" : "Create Account"}
