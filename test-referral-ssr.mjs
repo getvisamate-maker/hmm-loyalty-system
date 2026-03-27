@@ -5,6 +5,7 @@ const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.
 
 async function test() {
   const { data: code } = await supabase.from("referral_codes").select("*").limit(1).single();
-  console.log("Code details:", code);
+  // emulate the dashboard fetch but using anon privileges for the specific user id... wait, local node script doesn't have the cookies so it runs completely unauthenticated if we use anon key.
+  console.log(code);
 }
 test();

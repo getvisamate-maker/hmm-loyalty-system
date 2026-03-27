@@ -5,6 +5,10 @@ import Link from "next/link";
 import { Plus, Coffee, LogOut, Settings, QrCode, Shield, Gift, Megaphone, Users, TrendingUp, Search, ShieldUser } from "lucide-react";
 import { ReferralBanner } from "@/components/ReferralBanner";
 
+// Force Next.js to always render this page dynamically so affiliate stats are never stale
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function Dashboard() {
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
