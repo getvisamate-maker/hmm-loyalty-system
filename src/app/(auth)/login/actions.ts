@@ -50,10 +50,9 @@ export async function signUp(formData: FormData) {
     email,
     password,
     options: {
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://hmmloyalty.com'}/auth/callback`,
       data: {
         full_name: fullName,
-        // If they asked to be an owner, we still force "customer" initially 
-        // but save their INTENT so admins can see it. If they ask for 'customer', they get 'customer'.
         role: "customer", 
         requested_role: requestedRole, 
         marketing_consent: marketingConsent,
@@ -69,8 +68,13 @@ export async function signUp(formData: FormData) {
     return redirect(`/login?message=${encodeURIComponent(error.message)}${nextPath ? `&next=${nextPath}` : ''}`);
   }
 
+  // Check if email already exists (Supabase returns empty identities array for existing users when confirm_email is true)
+  if (data?.user && data.user.identities && data.user.identities.length === 0) {
+    return redirect(`/login?message=${encodeURIComponent("This email is already registered. Please sign in instead.")}${nextPath ? `&next=${nextPath}` : ''}`);
+  }
+
   if (!data?.session) {
-    return redirect(`/login?message=${encodeURIComponent("This account might already exist. Please try signing in instead.")}${nextPath ? `&next=${nextPath}` : ''}`);
+    return redirect(`/login?message=${encodeURIComponent("Success! Please check your inbox and click the verification link.")}${nextPath ? `&next=${nextPath}` : ''}`);
   }
 
   return redirect(nextPath || "/dashboard");

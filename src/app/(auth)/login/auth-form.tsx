@@ -154,7 +154,11 @@ export default function AuthForm({ message, next }: { message?: string, next?: s
         </div>
         
         {message && (
-          <div className="mt-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-center rounded-xl text-red-600 dark:text-red-400 text-sm animate-in zoom-in-95">
+          <div className={`mt-6 p-4 border text-center rounded-xl text-sm animate-in zoom-in-95 ${
+            message.includes('Success') 
+              ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-600 dark:text-green-400' 
+              : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-600 dark:text-red-400'
+          }`}>
             {message}
           </div>
         )}
