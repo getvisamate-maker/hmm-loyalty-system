@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { signIn, signUp } from "./actions"; // Wait, I need to export these from the page or a separate file? Yes, separate file created.
+import { signIn, signUp, resetPassword } from "./actions"; // Wait, I need to export these from the page or a separate file? Yes, separate file created.
 import { useRouter } from "next/navigation";
 
 export default function AuthForm({ message, next }: { message?: string, next?: string }) {
@@ -70,9 +70,18 @@ export default function AuthForm({ message, next }: { message?: string, next?: s
           required
         />
         
-        <label className="text-md font-medium text-black dark:text-zinc-300" htmlFor="password">
-          Password
-        </label>
+        <div className="flex justify-between items-center mb-1">
+          <label className="text-md font-medium text-black dark:text-zinc-300" htmlFor="password">
+            Password
+          </label>
+          <button
+            type="submit"
+            formAction={resetPassword}
+            className="text-xs text-zinc-500 hover:text-black dark:hover:text-white underline underline-offset-4"
+          >
+            Forgot Password?
+          </button>
+        </div>
         <input
           className="rounded-md px-4 py-2 bg-inherit border border-zinc-200 dark:border-zinc-800 mb-6 focus:ring-2 focus:ring-black dark:focus:ring-white outline-none"
           type="password"

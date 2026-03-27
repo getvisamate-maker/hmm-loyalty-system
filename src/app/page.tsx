@@ -1,5 +1,13 @@
 import Link from "next/link";
-import { Coffee, QrCode, ShieldCheck, Megaphone, ChevronRight, BarChart3, Smartphone, Zap, Gift, Users } from "lucide-react";
+import { Coffee, QrCode, ShieldCheck, Megaphone, ChevronRight, BarChart3, Smartphone, Zap, Gift, Users, ScanLine, Sparkles } from "lucide-react";
+
+const Logo = () => (
+  <div className="relative flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-fuchsia-500 shadow-lg shadow-indigo-500/20">
+    <div className="absolute inset-0.5 bg-black rounded-[10px] flex items-center justify-center">
+      <Sparkles size={16} className="text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
+    </div>
+  </div>
+);
 
 export default function Home() {
   return (
@@ -13,11 +21,9 @@ export default function Home() {
       {/* Navigation */}
       <nav className="border-b border-white/5 relative z-50 bg-black/20 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-white font-bold text-2xl tracking-tighter">
-            <div className="bg-gradient-to-br from-indigo-500 to-purple-500 p-2 rounded-xl">
-              <Coffee size={24} className="text-white" />
-            </div>
-            <span>hmmLoyalty</span>
+          <div className="flex items-center gap-3 text-white font-bold text-2xl tracking-tighter">
+            <Logo />
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-white to-zinc-400">HmmLoyalty</span>
           </div>
           <div className="flex items-center gap-6">
             <Link 
@@ -252,18 +258,33 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-white/5 py-12 relative z-10 bg-black">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex items-center gap-2 text-white font-bold opacity-80">
-            <Coffee size={20} />
-            <span>hmmLoyalty</span>
+      <footer className="border-t border-white/5 py-16 relative z-10 bg-[#030014]">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-3 text-white font-bold text-xl drop-shadow-md">
+              <Logo />
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-white to-zinc-400">HmmLoyalty</span>
+            </div>
+            <p className="text-zinc-500 text-sm max-w-xs">
+              The modern loyalty platform bridging the gap between local cafes and their best customers.
+            </p>
           </div>
-          <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8">
-            <Link href="/terms" className="text-zinc-600 hover:text-zinc-400 transition-colors text-sm font-medium">
-              Service Agreement
-            </Link>
-            <p className="text-zinc-700 text-sm">© {new Date().getFullYear()} hmmLoyalty. All rights reserved.</p>
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-6 md:gap-12">
+            <div className="flex flex-col gap-2 shadow-sm">
+              <span className="text-white font-semibold text-sm">Product</span>
+              <Link href="#features" className="text-zinc-500 hover:text-white transition-colors text-sm">Features</Link>
+              <Link href="/login" className="text-zinc-500 hover:text-white transition-colors text-sm">Pricing</Link>
+            </div>
+            <div className="flex flex-col gap-2 shadow-sm">
+              <span className="text-white font-semibold text-sm">Support</span>
+              <a href="mailto:support@hmmloyalty.com" className="text-zinc-500 hover:text-white transition-colors text-sm">Contact Us</a>
+              <Link href="/terms" className="text-zinc-500 hover:text-white transition-colors text-sm">Terms of Service</Link>
+              <Link href="/terms" className="text-zinc-500 hover:text-white transition-colors text-sm">Privacy Policy</Link>
+            </div>
           </div>
+        </div>
+        <div className="max-w-7xl mx-auto px-6 mt-16 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-zinc-600 text-sm">© {new Date().getFullYear()} HmmLoyalty. All rights reserved.</p>
         </div>
       </footer>
     </div>

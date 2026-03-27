@@ -75,3 +75,24 @@ export async function signUp(formData: FormData) {
 
   return redirect(nextPath || "/dashboard");
 }
+
+export async function resetPassword(formData: FormData) {
+  const email = formData.get("email") as string;
+  if (!email) {
+    return redirect(`/login?message=${encodeURIComponent("Email is required for password reset.")}`);
+  }
+
+  const cookieStore = await cookies();
+  const supabase = createClient(cookieStore);
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://hmmloyalty.com'}/auth/callback?next=/dashboard/settings`
+  });
+
+  if (error) {
+    console.error("Reset Password error:", error.message);
+    return redirect(`/login?message=${encodeURIComponent("Could not send password reset email. Please try again.")}`);
+  }
+
+  return redirect(`/login?message=${encodeURIComponent("Check your email for the password reset link.")}`);
+}
