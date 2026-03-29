@@ -43,18 +43,29 @@ export async function getPosConfig(cafeSlug: string) {
 
   const { data: secret } = await adminDb
     .from("cafe_secrets")
-    .select("secret_key")
+    .select("*")
     .eq("cafe_id", cafe.id)
     .single();
 
-  if (!secret?.secret_key) {
-    // Generate one if missing
-    // Or throw relevant error
-    throw new Error("POS Configuration incomplete. Contact support.");
+  let secretKey = secret?.secret_key;
+
+  if (!secretKey) {
+    // Generate one if missing securely
+    const newSecret = crypto.randomUUID();
+    const { error: insertError } = await adminDb
+      .from("cafe_secrets")
+      .upsert({ cafe_id: cafe.id, secret_key: newSecret });
+      
+    if (insertError) {
+      console.error("Insert Error POS Secret:", insertError);
+      throw new Error(`POS config error: ${insertError.message}`);
+    }
+    
+    secretKey = newSecret;
   }
 
   return { 
-    secretKey: secret.secret_key, 
+    secretKey: secretKey,
     cafeId: cafe.id, 
     cafeName: cafe.name 
   };

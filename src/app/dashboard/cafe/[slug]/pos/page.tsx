@@ -5,24 +5,17 @@ import { notFound, redirect } from "next/navigation";
 export default async function PosPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
 
+  let config;
+  let errorMsg = null;
+  
   try {
-    const config = await getPosConfig(slug);
-    
-    // We also need the Cafe Name for display
-    // getPosConfig already fetched Cafe, but didn't return name.
-    // Let's rely on the client component to display name if passed or just fetch name here.
-    // Optimization: Modify getPosConfig to return name too.
-    
-    return (
-      <PosTerminal 
-        cafeId={config.cafeId} 
-        secretKey={config.secretKey} 
-        cafeName={config.cafeName} 
-      />
-    );
+    config = await getPosConfig(slug);
   } catch (error: any) {
-    if (error.message.includes("Upgrade")) {
-       // Ideally redirect to upgrade page or show error
+    errorMsg = error.message;
+  }
+
+  if (errorMsg || !config) {
+    if (errorMsg?.includes("Upgrade")) {
        return (
          <div className="flex h-screen items-center justify-center bg-black text-white p-6 text-center">
             <div>
@@ -36,11 +29,20 @@ export default async function PosPage({ params }: { params: Promise<{ slug: stri
     // General error
     return (
         <div className="flex h-screen items-center justify-center bg-black text-white p-6 text-center">
-            <div>
+             <div>
                <h1 className="text-xl font-bold mb-2">Access Denied</h1>
-               <p className="text-red-400 font-mono text-sm">{error.message || "Unknown error"}</p>
-            </div>
+               <p className="text-red-400 font-mono text-sm">{errorMsg || "Unknown error"}</p>
+             </div>
          </div>
     );
   }
+
+  // We have config
+  return (
+    <PosTerminal 
+      cafeId={config.cafeId}
+      secretKey={config.secretKey}
+      cafeName={config.cafeName}
+    />
+  );
 }

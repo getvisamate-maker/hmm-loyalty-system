@@ -40,9 +40,23 @@ export async function createCafe(prevState: any, formData: FormData) {
     return { error: "You do not have permission to create a cafe." };
   }
 
-  let affiliateId = null;
-
   const adminDb = createAdminClient();
+
+  // PLAN USAGE LIMITS
+  const { data: userCafes } = await adminDb
+    .from("cafes")
+    .select("plan_level")
+    .eq("owner_id", user.id);
+  
+  if (userCafes && userCafes.length >= 1 && !isAdmin) {
+    // If they have cafes, check if they have at least one pro/growth plan to allow multi-location
+    const hasPaidPlan = userCafes.some(c => c.plan_level === 'pro' || c.plan_level === 'growth');
+    if (!hasPaidPlan) {
+      return { error: "Free partners are limited to 1 cafe location. Upgrade your first cafe to a paid plan to manage multiple locations." };
+    }
+  }
+
+  let affiliateId = null;
 
   if (referralCode) {
     // Validate Referral Code securely

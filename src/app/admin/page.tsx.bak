@@ -15,7 +15,7 @@ import {
   ArrowLeft,
   TrendingUp
 } from "lucide-react";
-import { CafeStatusToggle, ApprovePartnerButton, DeleteCafeButton, DeleteUserButton, PlanSelector, CreateReferralCodeForm, CafeRow, UserRow, AffiliateRow } from "./client-components"; // Added CreateReferralCodeForm import
+import { CafeStatusToggle, ApprovePartnerButton, DeleteCafeButton, DeleteUserButton, PlanSelector, CreateReferralCodeForm } from "./client-components"; // Added CreateReferralCodeForm import
 import Link from "next/link";
 import { Star, ScanLine, Target, Mail } from "lucide-react";
 import { ReferralBanner } from "@/components/ReferralBanner";
@@ -156,15 +156,15 @@ export default async function AdminDashboard(props: {
     let monthlyRevenue = 0;
     
     activeCafes.forEach((c: any) => {
-      // Pricing Model based on actual plans
-      if (c.plan_level === 'pro') monthlyRevenue += 79;
-      else if (c.plan_level === 'growth') monthlyRevenue += 39;
-      else monthlyRevenue += 19; // Standard
+      // Dummy Pricing Model
+      if (c.plan_level === 'pro') monthlyRevenue += 299;
+      else if (c.plan_level === 'growth') monthlyRevenue += 149;
+      else monthlyRevenue += 49; // Standard
     });
 
     const revenueShare = monthlyRevenue * 0.20; // 20%
     const userEmail = emailMap.get(a.referrer_id) || "No email";
-
+    
     return {
       ...a,
       referrer: {
@@ -173,8 +173,7 @@ export default async function AdminDashboard(props: {
       },
       active_count: activeCafes.length,
       monthly_revenue: monthlyRevenue,
-      revenue_share: revenueShare,
-      their_cafes: theirCafes
+      revenue_share: revenueShare
     };
   });
 
@@ -450,12 +449,42 @@ export default async function AdminDashboard(props: {
                  </thead>
                  <tbody className="divide-y divide-zinc-800/50">
                    {cafes.map((cafe: any) => (
-                     <CafeRow key={cafe.id} cafe={cafe} />
+                     <tr key={cafe.id} className="hover:bg-zinc-800/30 transition-all">
+                       <td className="px-6 py-4">
+                          <p className="font-bold text-white text-base">{cafe.name}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                             <a href={`/c/${cafe.slug}`} target="_blank" rel="noreferrer" className="text-xs text-indigo-400 hover:underline inline-flex items-center gap-1 font-mono">
+                               /c/{cafe.slug}
+                             </a>
+                             {cafe.location && <span className="text-xs text-zinc-500 border-l border-zinc-700 pl-2">{cafe.location}</span>}
+                          </div>
+                          {cafe.affiliate_id && (
+                             <span className="inline-block mt-2 text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/20">
+                               Referred
+                             </span>
+                          )}
+                       </td>
+                       <td className="px-6 py-4 align-top">
+                          <PlanSelector cafeId={cafe.id} currentPlan={cafe.plan_level || 'standard'} />
+                       </td>
+                       <td className="px-6 py-4 align-top">
+                          <div className="space-y-1">
+                             <div className="text-xs"><span className="text-zinc-500">Stamps Reqd:</span> <span className="text-white font-mono">{cafe.stamps_required}</span></div>
+                             <div className="text-xs"><span className="text-zinc-500">Owner ID:</span> <span className="text-white font-mono" title={cafe.owner_id}>{cafe.owner_id.substring(0,8)}...</span></div>
+                          </div>
+                       </td>
+                       <td className="px-6 py-4 text-right align-top">
+                         <div className="flex justify-end items-center gap-3">
+                            <CafeStatusToggle cafeId={cafe.id} initialStatus={cafe.status || 'active'} />
+                            <DeleteCafeButton cafeId={cafe.id} />
+                         </div>
+                       </td>
+                     </tr>
                    ))}
                    {cafes.length === 0 && (
-                     <tr>
-                       <td colSpan={4} className="px-6 py-12 text-center text-zinc-600 italic text-lg">No cafes found in the database.</td>
-                     </tr>
+                      <tr>
+                        <td colSpan={4} className="px-6 py-12 text-center text-zinc-600 italic text-lg">No cafes found in the database.</td>
+                      </tr>
                    )}
                  </tbody>
                </table>
@@ -485,12 +514,52 @@ export default async function AdminDashboard(props: {
                  </thead>
                  <tbody className="divide-y divide-zinc-800/50">
                    {users.map((u: any) => (
-                     <UserRow key={u.id} u={u} />
+                     <tr key={u.id} className="hover:bg-zinc-800/30 transition-all">
+                       <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                             <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center font-bold text-zinc-300 border border-zinc-700">
+                                {u.full_name ? u.full_name[0].toUpperCase() : u.email?.[0].toUpperCase() || '?'}
+                             </div>
+                             <div>
+                                <div className="font-bold text-white">{u.full_name || "Anonymous User"}</div>
+                                <div className="text-xs text-zinc-500 font-mono mt-0.5">{u.email}</div>
+                             </div>
+                          </div>
+                          {u.marketing_consent && (
+                             <span className="inline-block mt-2 text-[9px] uppercase tracking-wider bg-zinc-800 text-zinc-400 px-1.5 py-0.5 rounded">Consented to Marketing</span>
+                          )}
+                       </td>
+                       <td className="px-6 py-4 align-middle">
+                          <div className="flex flex-col gap-2 items-start">
+                              <span className={`px-2 py-1 rounded text-xs font-bold tracking-wide border shadow-sm ${
+                                 u.role === 'super_admin' ? 'bg-purple-500/10 text-purple-400 border-purple-500/30' :
+                                 u.role === 'cafe_owner' || u.is_partner ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30' :
+                                 'bg-zinc-800 text-zinc-400 border-zinc-700'
+                              }`}>
+                                 {u.role === 'super_admin' ? 'Super Admin' : u.is_partner ? 'Cafe Owner' : u.role || 'Customer'}
+                              </span>
+                              {u.requested_role && !u.is_partner && u.requested_role !== 'customer' && (
+                                <span className="text-[10px] text-amber-500 border border-amber-500/20 bg-amber-500/5 px-1.5 py-0.5 rounded">
+                                  Requested: {u.requested_role}
+                                </span>
+                              )}
+                          </div>
+                       </td>
+                       <td className="px-6 py-4 text-xs text-zinc-500 align-middle">
+                          <div><span className="text-zinc-600">Joined:</span> {new Date(u.created_at).toLocaleDateString()}</div>
+                          <div className="mt-1 font-mono text-[10px]">{u.id}</div>
+                       </td>
+                       <td className="px-6 py-4 text-right align-middle">
+                          <div className="flex justify-end gap-2">
+                            <DeleteUserButton userId={u.id} />
+                          </div>
+                       </td>
+                     </tr>
                    ))}
                    {users.length === 0 && (
-                     <tr>
-                       <td colSpan={4} className="px-6 py-12 text-center text-zinc-600 italic text-lg">No users found.</td>
-                     </tr>
+                      <tr>
+                        <td colSpan={4} className="px-6 py-12 text-center text-zinc-600 italic text-lg">No users found.</td>
+                      </tr>
                    )}
                  </tbody>
                </table>
@@ -528,20 +597,50 @@ export default async function AdminDashboard(props: {
                  </thead>
                  <tbody className="divide-y divide-zinc-800/50">
                    {affiliateMetrics
-                     .sort((a: any, b: any) => b.revenue_share - a.revenue_share)
-                     .map((aff: any) => (
-                       <AffiliateRow key={aff.id} aff={aff} />
-                     ))}
-                   {affiliateMetrics.length === 0 && (
-                     <tr>
-                       <td colSpan={5} className="px-6 py-16 text-center">
-                         <div className="inline-block bg-zinc-900 border border-zinc-800 p-6 rounded-2xl">
-                           <TrendingUp className="mx-auto text-zinc-600 mb-3" size={32} />
-                           <p className="text-white font-medium text-lg mb-1">No affiliates yet</p>
-                           <p className="text-zinc-500 text-sm">Generate your first referral link above to start your network.</p>
-                         </div>
+                      .sort((a: any, b: any) => b.revenue_share - a.revenue_share)
+                      .map((aff: any) => (
+                     <tr key={aff.id} className="hover:bg-zinc-800/30 transition-all">
+                       <td className="px-6 py-4">
+                          <div className="font-bold text-white text-base">{aff.referrer?.full_name || "Unknown Identity"}</div>
+                          <div className="text-xs text-zinc-500 mt-0.5">{aff.referrer?.email || "No email linked"}</div>
+                       </td>
+                       <td className="px-6 py-4">
+                          <div className="flex flex-col gap-1">
+            {aff.codes.map((code: string) => (
+                <div key={code} className="inline-flex items-center gap-2 bg-zinc-950 border border-zinc-700 px-3 py-1.5 rounded-lg group hover:border-emerald-500/50 transition-colors w-max">
+                  <span className="font-mono text-emerald-400 font-bold tracking-widest">{code}</span>
+                </div>
+            ))}
+          </div>
+                            
+                          </div>
+                          <div className="text-[10px] text-zinc-600 mt-1">Created: {new Date(aff.created_at).toLocaleDateString()}</div>
+                       </td>
+                       <td className="px-6 py-4 text-center">
+                          <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-zinc-800 text-white font-bold border border-zinc-700">
+                            {aff.active_count}
+                          </div>
+                       </td>
+                       <td className="px-6 py-4 text-right">
+                          <span className="text-lg text-zinc-300">${aff.monthly_revenue.toFixed(2)}</span>
+                          <span className="block text-[10px] text-zinc-500 uppercase tracking-widest">/ month</span>
+                       </td>
+                       <td className="px-6 py-4 text-right">
+                          <span className="text-xl font-black text-emerald-400">${aff.revenue_share.toFixed(2)}</span>
+                          <span className="block text-[10px] text-emerald-500/50 uppercase tracking-widest">20% cut</span>
                        </td>
                      </tr>
+                   ))}
+                   {affiliateMetrics.length === 0 && (
+                      <tr>
+                        <td colSpan={5} className="px-6 py-16 text-center">
+                          <div className="inline-block bg-zinc-900 border border-zinc-800 p-6 rounded-2xl">
+                            <TrendingUp className="mx-auto text-zinc-600 mb-3" size={32} />
+                            <p className="text-white font-medium text-lg mb-1">No affiliates yet</p>
+                            <p className="text-zinc-500 text-sm">Generate your first referral link above to start your network.</p>
+                          </div>
+                        </td>
+                      </tr>
                    )}
                  </tbody>
                </table>

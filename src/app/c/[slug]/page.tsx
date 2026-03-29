@@ -35,6 +35,32 @@ export default async function CustomerPage(props: { params: Promise<{ slug: stri
   }
 
   // Check Status
+  const plan = cafe.plan_level || 'standard';
+  const isGrowthOrHigher = ['growth', 'pro'].includes(plan.toLowerCase());
+  const isPro = plan.toLowerCase() === 'pro';
+  
+  // 14-day trial logic
+  const createdAtDate = new Date(cafe.created_at);
+  const now = new Date();
+  const trialDays = 14;
+  const msPerDay = 1000 * 60 * 60 * 24;
+  const daysSinceCreation = Math.floor((now.getTime() - createdAtDate.getTime()) / msPerDay);
+  
+  const isTrialExpired = daysSinceCreation > trialDays && plan === 'standard' && !cafe.stripe_subscription_id;
+
+  if (isTrialExpired) {
+    return (
+      <div className="flex flex-col min-h-screen bg-zinc-950 text-white font-sans items-center justify-center p-6 text-center">
+        <div className="w-20 h-20 bg-zinc-900 rounded-3xl flex items-center justify-center mb-6">
+          <span className="text-3xl">☕️</span>
+        </div>
+        <h1 className="text-3xl font-black mb-3 text-white">{cafe.name}</h1>
+        <p className="text-zinc-400 font-medium mb-8 max-w-sm">
+          This loyalty program is currently paused. Please notify the cafe staff.
+        </p>
+      </div>
+    );
+  }
   if (cafe.status === 'suspended') {
      return (
         <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center p-6 text-center text-zinc-400">

@@ -40,24 +40,28 @@ export default async function Dashboard() {
   // For now, let's treat requested owners as customers until approved, to match the admin flow.
   const isApprovedPartner = profile?.is_partner === true || profile?.role === 'cafe_owner' || profile?.role === 'super_admin' || isAdmin; // Allow admins to see owner view
 
-  // Fetch Referral Code (if any)
-  const { data: referralCode } = await supabase
+  // Fetch Referral Codes (if any)
+  const { data: referralCodes } = await supabase
     .from("referral_codes")
     .select("*")
     .eq("referrer_id", user.id)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+    .order("created_at", { ascending: false });
 
-  // If they have a code, let's get their stats
-  let affiliateStats = { activeCount: 0, revenue: 0 };
-  if (referralCode) {
-    const { count } = await supabase
+  const hasReferralCodes = referralCodes && referralCodes.length > 0;
+  const totalUses = referralCodes?.reduce((acc: number, code: any) => acc + (code.usage_count || 0), 0) || 0;
+
+  console.log("DASHBOARD RENDER - USER:", userEmail, "HAS CODES:", referralCodes?.length);
+
+  // If they have codes, let's get their stats
+  let affiliateStats: { activeCount: number, revenue: number, cafes: any[] } = { activeCount: 0, revenue: 0, cafes: [] };
+  if (hasReferralCodes) {
+    const { data: cafes, count } = await supabase
       .from("cafes")
-      .select("*", { count: 'exact', head: true })
+      .select("id, name, status, plan_level, created_at, slug", { count: 'exact' })
       .eq("affiliate_id", user.id);
     
     affiliateStats.activeCount = count || 0;
+    affiliateStats.cafes = cafes || [];
   }
   
   // ----------------------------------------------------------------------
@@ -192,37 +196,6 @@ export default async function Dashboard() {
 
             <div className="max-w-5xl mx-auto px-6 py-8">
                 
-                {/* Affiliate Status Banner - Rendered if they have a code */}
-                {referralCode && (
-                  <div className="mb-10 bg-gradient-to-br from-indigo-900 via-zinc-900 to-black rounded-2xl p-6 border border-indigo-500/20 shadow-xl relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 blur-3xl rounded-full pointer-events-none"></div>
-                    <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                      <div>
-                        <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
-                          <TrendingUp className="text-emerald-400" /> Your Partner Program
-                        </h2>
-                        <p className="text-zinc-400 text-sm max-w-md mb-4">
-                          Share your code with cafe owners. When they sign up, they are linked to you forever, and you earn 20% on their active subscription.
-                        </p>
-                        <div className="inline-flex items-center gap-3 bg-black/50 border border-zinc-800 rounded-lg px-4 py-2">
-                          <span className="text-zinc-500 text-xs uppercase font-bold tracking-widest">Share Code:</span>
-                          <span className="font-mono text-xl font-bold text-white tracking-widest">{referralCode.code}</span>
-                        </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-2 gap-4 w-full md:w-auto">
-                        <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-center min-w-[120px]">
-                          <p className="text-sm font-medium text-zinc-400 mb-1">Total Uses</p>
-                          <p className="text-3xl font-bold text-white">{referralCode.usage_count || 0}</p>
-                        </div>
-                        <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-center min-w-[120px]">
-                          <p className="text-sm font-medium text-zinc-400 mb-1">Active Cafes</p>
-                          <p className="text-3xl font-bold text-emerald-400">{affiliateStats.activeCount}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
 
                 {/* Loyalty Cards Section */}
                 <div className="flex items-center justify-between mb-6 hidden md:flex">
@@ -295,6 +268,79 @@ export default async function Dashboard() {
                         </p>
                     </div>
                 )}
+
+                {/* Affiliate Status Banner - Rendered if they have a code */}
+                {hasReferralCodes && (
+                  <div className="mb-10 space-y-4">
+                    <div className="bg-gradient-to-br from-indigo-900 via-zinc-900 to-black rounded-2xl p-6 border border-indigo-500/20 shadow-xl relative overflow-hidden">
+                      <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 blur-3xl rounded-full pointer-events-none"></div>
+                      <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                        <div className="flex-1">
+                          <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
+                            <TrendingUp className="text-emerald-400" /> Your Partner Program
+                          </h2>
+                          <p className="text-zinc-400 text-sm max-w-md mb-4">
+                            Share your code(s) with cafe owners. When they sign up, they are linked to you forever, and you earn 20% on their active subscription.
+                          </p>
+                          <div className="flex flex-wrap gap-3">
+                            {referralCodes.map((codeObj: any) => (
+                              <div key={codeObj.id} className="inline-flex items-center gap-3 bg-black/50 border border-zinc-800 rounded-lg px-4 py-2">
+                                <span className="text-zinc-500 text-xs uppercase font-bold tracking-widest">Share Code:</span>
+                                <span className="font-mono text-xl font-bold text-white tracking-widest">{codeObj.code}</span>
+                                <span className="text-xs text-zinc-400 bg-zinc-800 px-2 py-0.5 rounded-full">{codeObj.usage_count || 0} uses</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-4 w-full md:w-auto">
+                          <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-center min-w-[120px]">
+                            <p className="text-sm font-medium text-zinc-400 mb-1">Total Uses</p>
+                            <p className="text-3xl font-bold text-white">{totalUses}</p>
+                          </div>
+                          <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-center min-w-[120px]">
+                            <p className="text-sm font-medium text-zinc-400 mb-1">Active Cafes</p>
+                            <p className="text-3xl font-bold text-emerald-400">{affiliateStats.activeCount}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    {affiliateStats.cafes && affiliateStats.cafes.length > 0 && (
+                      <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
+                        <h3 className="text-sm font-bold mb-4 text-zinc-900 dark:text-white flex items-center gap-2">
+                           Referred Cafes
+                        </h3>
+                        <div className="overflow-x-auto">
+                           <table className="w-full text-sm text-left">
+                             <thead className="text-xs text-zinc-500 uppercase bg-zinc-50 dark:bg-zinc-800/50">
+                               <tr>
+                                  <th className="px-4 py-3 rounded-l-lg">Cafe Name</th>
+                                  <th className="px-4 py-3">Status</th>
+                                  <th className="px-4 py-3">Plan</th>
+                                  <th className="px-4 py-3 rounded-r-lg">Joined At</th>
+                               </tr>
+                             </thead>
+                             <tbody>
+                               {affiliateStats.cafes.map((cafe: any) => (
+                                 <tr key={cafe.id} className="border-b border-zinc-100 dark:border-zinc-800/50 last:border-0 hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                                   <td className="px-4 py-3 font-medium text-zinc-900 dark:text-white">{cafe.name}</td>
+                                   <td className="px-4 py-3">
+                                     <span className={`px-2 py-1 text-[10px] font-bold uppercase rounded-full tracking-wider ${cafe.status === 'active' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>
+                                       {cafe.status || 'unknown'}
+                                     </span>
+                                   </td>
+                                   <td className="px-4 py-3 capitalize text-zinc-600 dark:text-zinc-400">{cafe.plan_level || 'basic'}</td>
+                                   <td className="px-4 py-3 text-zinc-500">{new Date(cafe.created_at).toLocaleDateString()}</td>
+                                 </tr>
+                               ))}
+                             </tbody>
+                           </table>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
             </div>
 
              {/* --- Promotions Section --- */}
@@ -411,29 +457,69 @@ export default async function Dashboard() {
         </div>
 
         {/* Affiliate Status Banner - Rendered if partner is also an affiliate */}
-        {referralCode && (
-          <div className="mb-12 bg-gradient-to-br from-indigo-900/40 to-zinc-900/40 border border-indigo-500/20 rounded-2xl p-6 shadow-lg">
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-              <div>
-                <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
-                  <TrendingUp className="text-emerald-400" /> Partner Program Link
-                </h2>
-                <div className="inline-flex items-center gap-3 mt-2">
-                  <span className="text-zinc-500 text-xs uppercase font-bold tracking-widest">Share Code:</span>
-                  <span className="font-mono text-lg font-bold text-white tracking-widest bg-black px-3 py-1 rounded-lg border border-zinc-800">{referralCode.code}</span>
+        {hasReferralCodes && (
+          <div className="mb-12 space-y-4">
+            <div className="bg-gradient-to-br from-indigo-900/40 to-zinc-900/40 border border-indigo-500/20 rounded-2xl p-6 shadow-lg">
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                <div className="flex-1">
+                  <h2 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
+                    <TrendingUp className="text-emerald-400" /> Partner Program Link
+                  </h2>
+                  <div className="flex flex-wrap gap-3 mt-2">
+                    {referralCodes.map((codeObj: any) => (
+                      <div key={codeObj.id} className="inline-flex items-center gap-3 bg-black/50 border border-zinc-800 rounded-lg px-4 py-2">
+                        <span className="text-zinc-500 text-xs uppercase font-bold tracking-widest">Share Code:</span>
+                        <span className="font-mono text-lg font-bold text-white tracking-widest">{codeObj.code}</span>
+                        <span className="text-xs text-zinc-400 bg-zinc-800 px-2 py-0.5 rounded-full">{codeObj.usage_count || 0} uses</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-              <div className="flex gap-4">
-                <div className="bg-black/50 border border-zinc-800 rounded-xl p-4 text-center min-w-[100px]">
-                  <p className="text-xs font-medium text-zinc-500 mb-1 uppercase tracking-wider">Uses</p>
-                  <p className="text-2xl font-bold text-white">{referralCode.usage_count || 0}</p>
-                </div>
-                <div className="bg-black/50 border border-zinc-800 rounded-xl p-4 text-center min-w-[100px]">
-                  <p className="text-xs font-medium text-zinc-500 mb-1 uppercase tracking-wider">Active</p>
-                  <p className="text-2xl font-bold text-emerald-400">{affiliateStats.activeCount}</p>
+                <div className="flex gap-4">
+                  <div className="bg-black/50 border border-zinc-800 rounded-xl p-4 text-center min-w-[100px]">
+                    <p className="text-xs font-medium text-zinc-500 mb-1 uppercase tracking-wider">Uses</p>
+                    <p className="text-2xl font-bold text-white">{totalUses}</p>
+                  </div>
+                  <div className="bg-black/50 border border-zinc-800 rounded-xl p-4 text-center min-w-[100px]">
+                    <p className="text-xs font-medium text-zinc-500 mb-1 uppercase tracking-wider">Active</p>
+                    <p className="text-2xl font-bold text-emerald-400">{affiliateStats.activeCount}</p>
+                  </div>
                 </div>
               </div>
             </div>
+            {affiliateStats.cafes && affiliateStats.cafes.length > 0 && (
+              <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6 shadow-sm">
+                <h3 className="text-sm font-bold mb-4 text-zinc-200 flex items-center gap-2">
+                   Referred Cafes
+                </h3>
+                <div className="overflow-x-auto">
+                   <table className="w-full text-sm text-left">
+                     <thead className="text-xs text-zinc-500 uppercase bg-zinc-800/50">
+                       <tr>
+                          <th className="px-4 py-3 rounded-l-lg">Cafe Name</th>
+                          <th className="px-4 py-3">Status</th>
+                          <th className="px-4 py-3">Plan</th>
+                          <th className="px-4 py-3 rounded-r-lg">Joined At</th>
+                       </tr>
+                     </thead>
+                     <tbody>
+                       {affiliateStats.cafes.map((cafe: any) => (
+                         <tr key={cafe.id} className="border-b border-zinc-800/50 last:border-0 hover:bg-zinc-800/50">
+                           <td className="px-4 py-3 font-medium text-white">{cafe.name}</td>
+                           <td className="px-4 py-3">
+                             <span className={`px-2 py-1 text-[10px] font-bold uppercase rounded-full tracking-wider ${cafe.status === 'active' ? 'bg-emerald-900/30 text-emerald-400' : 'bg-red-900/30 text-red-400'}`}>
+                               {cafe.status || 'unknown'}
+                             </span>
+                           </td>
+                           <td className="px-4 py-3 capitalize text-zinc-400">{cafe.plan_level || 'basic'}</td>
+                           <td className="px-4 py-3 text-zinc-500">{new Date(cafe.created_at).toLocaleDateString()}</td>
+                         </tr>
+                       ))}
+                     </tbody>
+                   </table>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

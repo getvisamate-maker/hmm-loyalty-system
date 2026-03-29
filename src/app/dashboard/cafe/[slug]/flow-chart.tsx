@@ -26,7 +26,7 @@ export function BusinessFlowChart({ data }: { data: { day: string, count: number
   }, [data]);
 
   return (
-    <div className="h-64 w-full">
+    <div className="h-64 w-full overflow-hidden rounded-b-3xl">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart
           data={chartData}
@@ -71,11 +71,11 @@ export function BusinessFlowChart({ data }: { data: { day: string, count: number
             labelStyle={{ color: '#a1a1aa', marginBottom: '0.25rem' }}
           />
           <Area 
-            type="monotone" 
-            dataKey="scans" 
-            stroke="#6366f1" 
+            type="linear"
+            dataKey="scans"
+            stroke="#6366f1"
             strokeWidth={3}
-            fillOpacity={1} 
+            fillOpacity={1}
             fill="url(#colorScans)" 
             animationDuration={1500}
             activeDot={{ r: 6, strokeWidth: 0, fill: '#818cf8' }}
