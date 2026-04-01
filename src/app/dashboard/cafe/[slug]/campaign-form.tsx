@@ -38,6 +38,7 @@ export function CampaignForm({ cafeId, audienceCount, cafeName = "Your Cafe" }: 
   const [subject, setSubject] = useState(TEMPLATES[0].subject.replace("[Cafe Name]", cafeName));
   const [headline, setHeadline] = useState(TEMPLATES[0].headline);
   const [body, setBody] = useState(TEMPLATES[0].body);
+  const [duration, setDuration] = useState(7);
   const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">("mobile");
   
   const handleDownload = async (type: string) => {
@@ -76,7 +77,7 @@ export function CampaignForm({ cafeId, audienceCount, cafeName = "Your Cafe" }: 
     setStatus("loading");
     
     try {
-      await createPromotion(cafeId, subject, body);
+      await createPromotion(cafeId, subject, body, duration);
       await new Promise(resolve => setTimeout(resolve, 1500));
       setStatus("success");
       setTimeout(() => {
@@ -156,6 +157,22 @@ export function CampaignForm({ cafeId, audienceCount, cafeName = "Your Cafe" }: 
               onChange={(e) => setBody(e.target.value)}
               className="w-full bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-sm text-zinc-900 dark:text-white outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all shadow-sm resize-none h-32 leading-relaxed"
             />
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2 block">Promotion Duration</label>
+            <select
+              value={duration}
+              onChange={(e) => setDuration(Number(e.target.value))}
+              className="w-full bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-sm text-zinc-900 dark:text-white outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all shadow-sm"
+            >
+              <option value={1}>1 Day</option>
+              <option value={3}>3 Days</option>
+              <option value={7}>7 Days</option>
+              <option value={14}>14 Days</option>
+              <option value={30}>30 Days</option>
+            </select>
+            <p className="text-xs text-zinc-500 mt-2">After this duration, the promotion will expire and disappear from the customer dashboard.</p>
           </div>
           
           <div className="pt-4 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between border-t border-zinc-200 dark:border-zinc-800 mt-6">

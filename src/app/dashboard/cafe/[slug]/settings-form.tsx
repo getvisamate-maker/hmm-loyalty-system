@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { updateCafeSettings } from "./actions";
 import { Save, Check } from "lucide-react";
+import { FeatureLock } from "@/components/feature-lock";
+import { isFeatureEnabled, FEATURES } from "@/utils/features";
 
 export function CafeSettingsForm({ cafe }: { cafe: any }) {
   const [status, setStatus] = useState<"idle" | "loading" | "success">("idle");
@@ -132,53 +134,57 @@ export function CafeSettingsForm({ cafe }: { cafe: any }) {
                  placeholder="https://instagram.com/your_cafe"
                />
              </div>
-           </div>
-           
-           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-             <div>
-               <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-1">Brand Color (Primary)</label>
-               <div className="flex gap-2">
-                 <input 
-                   type="color" 
-                   name="primary_color"
-                   value={formData.primary_color}
-                   onChange={handleChange}
-                   className="h-10 w-10 p-0 border-0 rounded overflow-hidden cursor-pointer" 
-                 />
-                 <input 
-                   type="text" 
-                   name="primary_color"
-                   value={formData.primary_color}
-                   onChange={handleChange}
-                   className="flex-1 bg-zinc-50 dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-2 text-sm text-zinc-900 dark:text-white outline-none focus:border-indigo-500 transition-colors font-mono" 
-                   placeholder="#4f46e5"
-                 />
-               </div>
-             </div>
-              <div>
-               <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-1">Accent Color (Secondary)</label>
-               <div className="flex gap-2">
-                 <input 
-                   type="color" 
-                   name="secondary_color"
-                   value={formData.secondary_color}
-                   onChange={handleChange}
-                   className="h-10 w-10 p-0 border-0 rounded overflow-hidden cursor-pointer" 
-                 />
-                 <input 
-                   type="text" 
-                   name="secondary_color"
-                   value={formData.secondary_color}
-                   onChange={handleChange}
-                   className="flex-1 bg-zinc-50 dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-2 text-sm text-zinc-900 dark:text-white outline-none focus:border-indigo-500 transition-colors font-mono" 
-                   placeholder="#fbbf24"
-                 />
-               </div>
-             </div>
-           </div>
-        </div>
-
-        {/* Security Settings */}
+            </div>
+            
+            <FeatureLock 
+              isLocked={!isFeatureEnabled(cafe.plan_level, FEATURES.CUSTOM_BRANDING)}
+              title="Custom Branding"
+              description="Upgrade to Growth or Pro to apply custom brand colors to your digital loyalty cards."
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-1">Brand Color (Primary)</label>
+                  <div className="flex gap-2">
+                    <input 
+                      type="color"
+                      name="primary_color"
+                      value={formData.primary_color}
+                      onChange={handleChange}
+                      className="h-10 w-10 p-0 border-0 rounded overflow-hidden cursor-pointer"
+                    />
+                    <input 
+                      type="text"
+                      name="primary_color"
+                      value={formData.primary_color}
+                      onChange={handleChange}
+                      className="flex-1 bg-zinc-50 dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-2 text-sm text-zinc-900 dark:text-white outline-none focus:border-indigo-500 transition-colors font-mono"
+                      placeholder="#4f46e5"
+                    />
+                  </div>
+                </div>
+                 <div>
+                  <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-1">Accent Color (Secondary)</label>
+                  <div className="flex gap-2">
+                    <input 
+                      type="color"
+                      name="secondary_color"
+                      value={formData.secondary_color}
+                      onChange={handleChange}
+                      className="h-10 w-10 p-0 border-0 rounded overflow-hidden cursor-pointer"
+                    />
+                    <input 
+                      type="text"
+                      name="secondary_color"
+                      value={formData.secondary_color}
+                      onChange={handleChange}
+                      className="flex-1 bg-zinc-50 dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-2 text-sm text-zinc-900 dark:text-white outline-none focus:border-indigo-500 transition-colors font-mono"
+                      placeholder="#fbbf24"
+                    />
+                  </div>
+                </div>
+              </div>
+            </FeatureLock>
+          </div>        {/* Security Settings */}
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-1">Anti-Fraud Security</label>

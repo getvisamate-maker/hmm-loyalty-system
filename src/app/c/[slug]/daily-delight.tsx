@@ -20,11 +20,36 @@ const delights = [
   { type: "fact", content: "Finland consumes the most coffee per capita in the world.", icon: <Lightbulb size={18} /> },
   { type: "joke", content: "What's a barista's favorite exercise? The French press.", icon: <Smile size={18} /> },
   { type: "quote", content: "Behind every successful person is a substantial amount of coffee.", icon: <Coffee size={18} /> },
-  { type: "fact", content: "A group of pugs is called a grumble.", icon: <Lightbulb size={18} /> },
+  { type: "fact", content: "Coffee was originally chewed. African tribes mixed coffee berries with fat to form edible energy balls.", icon: <Lightbulb size={18} /> },
   { type: "joke", content: "I like my coffee like I like my weekends... short and sweet.", icon: <Smile size={18} /> },
   { type: "quote", content: "May your coffee be strong and your Monday be short.", icon: <Coffee size={18} /> },
   { type: "fact", content: "The first webcam was invented at Cambridge to check the status of a coffee pot.", icon: <Lightbulb size={18} /> },
   { type: "joke", content: "Why did the hipster burn his tongue? He drank his coffee before it was cool.", icon: <Smile size={18} /> },
+  
+  // New Delights added!
+  { type: "fact", content: "Decaf does not mean caffeine-free. An 8-ounce cup of decaf coffee contains 2 to 12 milligrams of caffeine.", icon: <Lightbulb size={18} /> },
+  { type: "joke", content: "How did the hipster burn his tongue? He drank his coffee before it was cool.", icon: <Smile size={18} /> },
+  { type: "quote", content: "Coffee is a language in itself.", icon: <Coffee size={18} /> },
+  { type: "fact", content: "Brazil consumes the most coffee relative to its production. It's the highest producing and second-highest consuming nation.", icon: <Lightbulb size={18} /> },
+  { type: "joke", content: "What do you call it when you walk into a cafe and feel like you've been there before? Deja-brew.", icon: <Smile size={18} /> },
+  { type: "quote", content: "Given enough coffee, I could rule the world.", icon: <Coffee size={18} /> },
+  { type: "fact", content: "The word 'espresso' comes from Italian and means 'expressed' or 'forced out'.", icon: <Lightbulb size={18} /> },
+  { type: "joke", content: "Why did the coffee check its watch? It was pressed for time.", icon: <Smile size={18} /> },
+  { type: "quote", content: "My birthstone is a coffee bean.", icon: <Coffee size={18} /> },
+  { type: "fact", content: "In 16th-century Constantinople, coffee was so important that a woman could divorce her husband if he didn't provide enough of it.", icon: <Lightbulb size={18} /> },
+  { type: "joke", content: "Why do they call it a mug? Because you get robbed of your sleep!", icon: <Smile size={18} /> },
+  { type: "quote", content: "Coffee and friends make the perfect blend.", icon: <Coffee size={18} /> },
+  { type: "fact", content: "Light roast coffee actually has more caffeine than dark roast.", icon: <Lightbulb size={18} /> },
+  { type: "joke", content: "What do gossiping pots do? They spill the beans.", icon: <Smile size={18} /> },
+  { type: "quote", content: "Today's good mood is sponsored by coffee.", icon: <Coffee size={18} /> },
+  { type: "fact", content: "The most expensive coffee in the world is Kopi Luwak, and it comes from animal poop.", icon: <Lightbulb size={18} /> },
+  { type: "joke", content: "What does a coffee say to its romantic partner? 'Words cannot espresso how much you mean to me!'", icon: <Smile size={18} /> },
+  { type: "quote", content: "Seven days without coffee makes one WEAK.", icon: <Coffee size={18} /> },
+  { type: "fact", content: "Cold brew coffee typically has more caffeine than iced coffee and regular hot brewed coffee.", icon: <Lightbulb size={18} /> },
+  { type: "joke", content: "How do you know you've had too much coffee? You can thread a sewing machine while it's running.", icon: <Smile size={18} /> },
+  { type: "fact", content: "There are two main types of coffee plants: Arabica and Robusta.", icon: <Lightbulb size={18} /> },
+  { type: "joke", content: "What's the opposite of a coffee? A sneezy.", icon: <Smile size={18} /> },
+  { type: "quote", content: "I don't need an inspirational quote. I need coffee.", icon: <Coffee size={18} /> }
 ];
 
 export function DailyDelight() {

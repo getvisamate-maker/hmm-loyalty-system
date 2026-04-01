@@ -94,6 +94,7 @@ export default async function Dashboard() {
                 *,
                 cafes (name, logo_url)
             `)
+            .or(`expires_at.gte.${new Date().toISOString()},expires_at.is.null`)
             .order("created_at", { ascending: false })
             .limit(5);
         promotions = promos || [];
@@ -360,8 +361,11 @@ export default async function Dashboard() {
                                     <div>
                                         <div className="flex items-baseline justify-between mb-1 gap-2">
                                             <h3 className="font-bold text-amber-900 dark:text-amber-100 leading-tight">{promo.title}</h3>
-                                            <span className="text-[10px] uppercase font-bold text-amber-700/50 dark:text-amber-500/50 tracking-wider flex-shrink-0">
-                                                {new Date(promo.created_at).toLocaleDateString()}
+                                            <span className="text-[10px] uppercase font-bold text-amber-700/50 dark:text-amber-500/50 tracking-wider flex-shrink-0 flex flex-col items-end">
+                                                <span>{new Date(promo.created_at).toLocaleDateString()}</span>
+                                                {promo.expires_at && (
+                                                  <span className="text-red-500/80 dark:text-red-400">Exp: {new Date(promo.expires_at).toLocaleDateString()}</span>
+                                                )}
                                             </span>
                                         </div>
                                         <p className="text-sm text-amber-800/80 dark:text-amber-200/80 leading-relaxed mb-3">

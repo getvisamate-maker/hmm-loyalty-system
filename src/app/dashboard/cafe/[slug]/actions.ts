@@ -5,7 +5,7 @@ import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { FEATURES, isFeatureEnabled, PlanLevel } from "@/utils/features";
 
-export async function createPromotion(cafeId: string, title: string, body: string) {
+export async function createPromotion(cafeId: string, title: string, body: string, durationDays: number = 7) {
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
 
@@ -29,11 +29,15 @@ export async function createPromotion(cafeId: string, title: string, body: strin
     throw new Error(`Upgrade to Growth or Pro plan to create promotions.`);
   }
 
+  // Calculate Expiration
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + durationDays);
+
   // Insert promotion into database
   const { error } = await supabase
     .from("promotions")
     .insert([
-      { cafe_id: cafeId, title, body }
+      { cafe_id: cafeId, title, body, expires_at: expiresAt.toISOString() }
     ]);
 
   if (error) {
