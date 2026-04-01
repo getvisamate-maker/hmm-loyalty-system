@@ -28,7 +28,7 @@ export default function Home() {
               Sign In
             </Link>
             <Link 
-              href="/login"
+              href="/login?mode=signup"
               className="group relative inline-flex items-center justify-center px-6 py-2.5 text-sm font-bold text-black transition-all duration-200 bg-purple-500 rounded-lg hover:bg-fuchsia-400 hover:scale-105"
             >
               Get Started

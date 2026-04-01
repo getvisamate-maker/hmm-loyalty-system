@@ -4,8 +4,8 @@ import { useState } from "react";
 import { signIn, signUp, resetPassword } from "./actions"; // Wait, I need to export these from the page or a separate file? Yes, separate file created.
 import { useRouter } from "next/navigation";
 
-export default function AuthForm({ message, next }: { message?: string, next?: string }) {
-  const [isLogin, setIsLogin] = useState(true);
+export default function AuthForm({ message, next, mode = "signin" }: { message?: string, next?: string, mode?: string }) {
+  const [isLogin, setIsLogin] = useState(mode !== "signup");
   const [loading, setLoading] = useState(false);
   const [role, setRole] = useState("customer");
 

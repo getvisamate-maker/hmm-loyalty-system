@@ -46,7 +46,7 @@ export function HeroSection() {
         className="flex flex-col sm:flex-row items-center justify-center gap-5 w-full sm:w-auto mb-28"
       >
         <Link
-          href="/login"
+          href="/login?mode=signup"
           className="w-full sm:w-auto bg-gradient-to-r from-fuchsia-400 to-purple-500 hover:from-amber-300 hover:to-fuchsia-400 text-black px-8 py-4 rounded-xl text-lg font-bold transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2 shadow-[0_0_30px_rgba(245,158,11,0.3)]"
         >
           Start 14-Day Free Trial
@@ -333,7 +333,7 @@ export function PricingSection() {
                 </button>
             ) : (
                 <Link
-                    href="/login"
+                    href="/login?mode=signup"
                     className={`w-full flex items-center justify-center py-4 rounded-xl font-bold transition-all mb-10 ${plan.isPopular ? 'bg-purple-500 text-black hover:bg-fuchsia-400 hover:scale-[1.02]' : 'bg-zinc-800 text-white hover:bg-zinc-700'}`}
                 >
                     Start Free Trial
