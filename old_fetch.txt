@@ -1,0 +1,26 @@
+  // For now, let's treat requested owners as customers until approved, to match the admin flow.
+  const isApprovedPartner = profile?.is_partner === true || profile?.role === 'cafe_owner' || profile?.role === 'super_admin' || isAdmin; // Allow admins to see owner view
+
+  // Fetch Referral Code (if any)
+  const { data: referralCode } = await supabase
+    .from("referral_codes")
+    .select("*")
+    .eq("referrer_id", user.id)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  console.log("DASHBOARD RENDER - USER:", userEmail, "HAS CODE:", referralCode?.code);
+
+  // If they have a code, let's get their stats
+  let affiliateStats: { activeCount: number, revenue: number, cafes: any[] } = { activeCount: 0, revenue: 0, cafes: [] };
+  if (referralCode) {
+    const { data: cafes, count } = await supabase
+      .from("cafes")
+      .select("id, name, status, plan_level, created_at, slug", { count: 'exact' })
+      .eq("affiliate_id", user.id);
+    
+    affiliateStats.activeCount = count || 0;
+    affiliateStats.cafes = cafes || [];
+  }
+  

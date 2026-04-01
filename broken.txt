@@ -1,0 +1,80 @@
+                                                        </div>
+
+                                                        <div className="bg-black text-white p-6 rounded-3xl flex flex-col justify-between relative overflow-hidden group">
+                                                          <div className="absolute top-0 right-0 p-6 opacity-20 group-hover:scale-110 group-hover:rotate-12 transition-transform duration-700">
+                                                            <TrendingUp size={100} />
+                                                          </div>
+                                                          <div className="relative z-10 w-12 h-12 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center mb-6">
+                                                            <Megaphone size={24} />
+                                                          </div>
+                                                          <div className="relative z-10">
+                                                            <p className="text-zinc-300 font-medium mb-1">Marketing Audience</p>
+                                                            <div className="text-4xl font-black">{stats.optedInCount}</div>
+                                                          </div>
+                                                        </div>
+                                                      </div>
+
+                                                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                                                        <div className="lg:col-span-2 bg-white dark:bg-zinc-950 p-8 rounded-3xl border border-zinc-100 dark:border-zinc-800">
+                                                          <div className="flex items-center justify-between mb-8">
+                                                            <h3 className="text-xl font-bold text-zinc-900 dark:text-white">Store Traffic (30 Days)</h3>
+                                                            <span className="px-4 py-2 bg-zinc-100 dark:bg-zinc-900 rounded-lg text-sm font-bold text-zinc-600 dark:text-zinc-300">
+                                                              {stats.currentMonthCount} Scans this month
+                                                            </span>
+                                                          </div>
+                                                          <BusinessFlowChart data={dailyFlowArray.map(([day, count]: any) => ({ day, count }))} />
+                                                        </div>
+
+                                                        <div className="bg-white dark:bg-zinc-950 p-8 rounded-3xl border border-zinc-100 dark:border-zinc-800">
+                                                           <h3 className="text-xl font-bold text-zinc-900 dark:text-white mb-6 flex items-center gap-2">
+                                                             <span className="relative flex h-3 w-3">
+                                                               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                                                               <span className="relative inline-flex rounded-full h-3 w-3 bg-indigo-500"></span>
+                                                             </span>
+                                                             Live Activity
+                                                           </h3>
+                                                           {recentLogs.length > 0 ? (
+                                                             <div className="space-y-4">
+                                                              {recentLogs.map((log: any, i: number) => (
+                                                                <div key={i} className="flex gap-4">
+                                                                  <div className="mt-1">
+                                                                    <div className="w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                                                                      <CoffeeIcon size={14} />
+                                                                    </div>
+                                                                  </div>
+                                                                  <div className="flex-1 pb-4 border-b border-zinc-100 dark:border-zinc-800 last:border-0 last:pb-0">
+                                                                    <p className="font-bold text-zinc-900 dark:text-white text-sm">
+                                                                      {log.loyalty_cards?.profiles?.full_name || "A customer"}
+                                                                    </p>
+                                                                    <p suppressHydrationWarning className="text-xs text-zinc-500 mt-1">
+                                                                      {new Date(log.created_at).toLocaleDateString('en-US', {
+                                                                        month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                                                                      })}
+                                                                    </p>
+                                                                  </div>
+                                                                </div>
+                                                              ))}
+                                                             </div>
+                                                           ) : (
+                                                            <div className="h-40 flex flex-col items-center justify-center text-zinc-400">
+                                                              <Activity className="opacity-20 mb-2" size={32} />
+                                                              <p className="text-sm">Waiting for first scan...</p>
+                                                            </div>
+                                                           )}
+                                                        </div>
+                                                      </div>
+                                                    </div>
+
+                                                    {/* RIGHT COLUMN - BILLING & TABS */}
+                                                    <div className="lg:col-span-4">
+                                                      {/* Custom Tab Navigation */}
+                                                      <div className="flex gap-2 overflow-x-auto no-scrollbar mb-6">
+                                                        {TABS.map(tab => {
+                                                          const Icon = tab.icon;
+                                                          const isActive = activeTab === tab.id;
+                                                          return (
+                                                            <button
+                                                              key={tab.id}
+                                                              onClick={() => setActiveTab(tab.id)}
+                                                              className={`flex items-center gap-2 px-5 py-3 rounded-t-xl font-bold transition-all whitespace-nowrap border-b-2 ${
+                                                                isActive 

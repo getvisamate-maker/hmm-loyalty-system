@@ -39,28 +39,29 @@ export default async function BillingPage({
   const PLAN_DETAILS = [
     {
       id: 'standard',
-      name: 'Standard',
-      price: '$19',
-      desc: 'Perfect for small shops starting out.',
-      features: ['Basic Analytics', 'Digital Loyalty Cards', 'Single Location'],
+      name: 'Starter',
+      price: '$29',
+      desc: 'Perfect for independent shops.',
+      features: ['Up to 500 customers', 'Basic analytics', 'Digital punch card', 'Email support'],
       icon: <ShieldCheck className="w-6 h-6 text-indigo-500" />
     },
     {
       id: 'growth',
       name: 'Growth',
-      price: '$39',
-      desc: 'Grow your customer base with marketing.',
-      features: ['Advanced Analytics', 'Email Marketing', 'Custom Branding'],
+      price: '$59',
+      desc: 'For busy, growing cafes.',
+      features: ['Unlimited customers', 'Advanced analytics', 'Custom rewards', 'Staff accounts', 'Priority support'],
       icon: <Zap className="w-6 h-6 text-amber-500" />,
       popular: true
     },
     {
       id: 'pro',
       name: 'Pro',
-      price: '$79',
-      desc: 'For serious businesses that need it all.',
-      features: ['Staff Management (POS)', 'Export Data', 'Multi-location Priority'],
-      icon: <Rocket className="w-6 h-6 text-emerald-500" />
+      price: '$99',
+      desc: 'For local chains and franchises.',
+      features: ['Multiple locations', 'Staff Management (POS)', 'Custom Branding', 'SMS Marketing'],
+      icon: <Rocket className="w-6 h-6 text-emerald-500" />,
+      comingSoon: true
     }
   ];
 
@@ -124,16 +125,26 @@ export default async function BillingPage({
               <input type="hidden" name="cafe_slug" value={slug} />
               <input type="hidden" name="current_url" value={currentUrl} />
               
-              <button 
-                type="submit" 
-                className={`w-full py-3 px-4 rounded-xl font-bold transition-all ${
-                  plan.popular 
-                    ? 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white shadow-lg' 
-                    : 'bg-zinc-800 hover:bg-zinc-700 text-white'
-                }`}
-              >
-                {currentPlan === plan.id && status === 'active' ? 'Current Plan' : 'Subscribe'}
-              </button>
+              {plan.comingSoon ? (
+                <button 
+                  type="button" 
+                  disabled
+                  className="w-full py-3 px-4 rounded-xl font-bold transition-all bg-zinc-800 text-zinc-500 cursor-not-allowed"
+                >
+                  Coming Soon
+                </button>
+              ) : (
+                <button 
+                  type="submit" 
+                  className={`w-full py-3 px-4 rounded-xl font-bold transition-all ${
+                    plan.popular 
+                      ? 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white shadow-lg' 
+                      : 'bg-zinc-800 hover:bg-zinc-700 text-white'
+                  }`}
+                >
+                  {currentPlan === plan.id && status === 'active' ? 'Current Plan' : 'Subscribe'}
+                </button>
+              )}
             </form>
           </div>
         ))}

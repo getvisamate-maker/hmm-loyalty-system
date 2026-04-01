@@ -1,0 +1,58 @@
+
+> temp_app@0.1.0 dev
+> next dev
+
+▲ Next.js 16.1.7 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://172.20.10.2:3000
+- Environments: .env.local
+
+✓ Starting...
+✓ Ready in 616ms
+ GET /dashboard/cafe/apple/billing?success=true&session_id=cs_test_a1h5WFZLONffolQ4iV5CCz7QnIuEK9eGyySuFW7CvWP0AA3Pei2oyH2Hl7 200 in 1932ms (compile: 771ms, render: 1161ms)
+ GET /manifest.webmanifest 200 in 96ms (compile: 79ms, render: 18ms)
+Unhandled event type product.created
+ POST /api/webhooks/stripe 200 in 96ms (compile: 82ms, render: 15ms)
+Unhandled event type price.created
+ POST /api/webhooks/stripe 200 in 6ms (compile: 1586µs, render: 5ms)
+Unhandled event type charge.succeeded
+ POST /api/webhooks/stripe 200 in 6ms (compile: 1552µs, render: 4ms)
+Unhandled event type payment_intent.succeeded
+ POST /api/webhooks/stripe 200 in 6ms (compile: 1660µs, render: 4ms)
+[Stripe Webhook] Received checkout.session.completed for cafe 1 and plan pro
+Unhandled event type payment_intent.created
+ POST /api/webhooks/stripe 200 in 6ms (compile: 1073µs, render: 5ms)
+Error updating cafe plan: {
+  code: 'PGRST204',
+  details: null,
+  hint: null,
+  message: "Could not find the 'stripe_customer_id' column of 'cafes' in the schema cache"
+}
+ POST /api/webhooks/stripe 500 in 315ms (compile: 1159µs, render: 314ms)
+Unhandled event type charge.updated
+ POST /api/webhooks/stripe 200 in 5ms (compile: 1358µs, render: 4ms)
+✓ Compiled in 559ms
+Unhandled event type product.created
+ POST /api/webhooks/stripe 200 in 20ms (compile: 6ms, render: 14ms)
+Unhandled event type price.created
+ POST /api/webhooks/stripe 200 in 7ms (compile: 2ms, render: 5ms)
+Unhandled event type charge.succeeded
+ POST /api/webhooks/stripe 200 in 10ms (compile: 1817µs, render: 8ms)
+Unhandled event type payment_intent.succeeded
+ POST /api/webhooks/stripe 200 in 7ms (compile: 945µs, render: 6ms)
+Unhandled event type payment_intent.created
+ POST /api/webhooks/stripe 200 in 6ms (compile: 1087µs, render: 5ms)
+[Stripe Webhook] Received checkout.session.completed for cafe 1 and plan pro
+Error updating cafe plan: {
+  code: 'PGRST204',
+  details: null,
+  hint: null,
+  message: "Could not find the 'stripe_customer_id' column of 'cafes' in the schema cache"
+}
+ POST /api/webhooks/stripe 500 in 311ms (compile: 806µs, render: 310ms)
+Unhandled event type charge.updated
+ POST /api/webhooks/stripe 200 in 6ms (compile: 992µs, render: 5ms)
+ GET /dashboard/cafe/apple/billing?success=true&session_id=cs_test_a1h5WFZLONffolQ4iV5CCz7QnIuEK9eGyySuFW7CvWP0AA3Pei2oyH2Hl7 200 in 1223ms (compile: 44ms, render: 1180ms)
+ GET /manifest.webmanifest 200 in 6ms (compile: 3ms, render: 3ms)
+ GET /dashboard/cafe/apple/billing?success=true&session_id=cs_test_a1h5WFZLONffolQ4iV5CCz7QnIuEK9eGyySuFW7CvWP0AA3Pei2oyH2Hl7 200 in 553ms (compile: 5ms, render: 548ms)
+ GET /manifest.webmanifest 200 in 5ms (compile: 3ms, render: 2ms)

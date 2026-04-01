@@ -412,9 +412,9 @@ export function PlanSelector({ cafeId, currentPlan }: { cafeId: string, currentP
         disabled={loading}
         className={`appearance-none pl-3 pr-8 py-1 rounded text-xs font-bold uppercase tracking-wider border outline-none cursor-pointer transition-colors ${getPlanColor(plan)}`}
       >
-        <option value="standard">Standard</option>
+        <option value="standard">Starter</option>
         <option value="growth">Growth</option>
-        <option value="pro">Pro</option>
+        <option value="pro">Pro (Coming Soon)</option>
       </select>
       <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none opacity-50">
         {loading ? <Loader2 size={10} className="animate-spin" /> : <ArrowUpCircle size={10} />}

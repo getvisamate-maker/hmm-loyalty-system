@@ -1,0 +1,91 @@
+Checking for new versions...
+
+Getting ready...
+Ready! You are using Stripe API Version [2026-03-25.dahlia]. Your webhook signing secret is whsec_0b032ebea4093dad193cb2fb6e6f5b4bc8f2b879271bf02486b92d32c93ce371 (^C to quit)
+2026-03-29 12:55:10   --> product.created [evt_1TG8ZGRsNX6uL8fSeGCV2WYq]
+2026-03-29 12:55:10  <--  [200] POST http://localhost:3000/api/webhooks/stripe [evt_1TG8ZGRsNX6uL8fSeGCV2WYq]
+2026-03-29 12:55:10   --> price.created [evt_1TG8ZGRsNX6uL8fSMPXgYDqJ]
+2026-03-29 12:55:10  <--  [200] POST http://localhost:3000/api/webhooks/stripe [evt_1TG8ZGRsNX6uL8fSMPXgYDqJ]
+2026-03-29 12:55:14   --> charge.succeeded [evt_3TG8ZJRsNX6uL8fS0mk7qdYa]
+2026-03-29 12:55:14  <--  [200] POST http://localhost:3000/api/webhooks/stripe [evt_3TG8ZJRsNX6uL8fS0mk7qdYa]
+2026-03-29 12:55:14   --> payment_intent.succeeded [evt_3TG8ZJRsNX6uL8fS0MQqH9zy]
+2026-03-29 12:55:14  <--  [200] POST http://localhost:3000/api/webhooks/stripe [evt_3TG8ZJRsNX6uL8fS0MQqH9zy]
+2026-03-29 12:55:14   --> checkout.session.completed [evt_1TG8ZKRsNX6uL8fSuBJd2x0G]
+2026-03-29 12:55:14   --> payment_intent.created [evt_3TG8ZJRsNX6uL8fS0oMbJN0W]
+2026-03-29 12:55:14  <--  [200] POST http://localhost:3000/api/webhooks/stripe [evt_3TG8ZJRsNX6uL8fS0oMbJN0W]
+2026-03-29 12:55:15  <--  [500] POST http://localhost:3000/api/webhooks/stripe [evt_1TG8ZKRsNX6uL8fSuBJd2x0G]
+2026-03-29 12:55:16   --> charge.updated [evt_3TG8ZJRsNX6uL8fS0I84CVNT]
+2026-03-29 12:55:16  <--  [200] POST http://localhost:3000/api/webhooks/stripe [evt_3TG8ZJRsNX6uL8fS0I84CVNT]
+2026-03-29 12:57:07   --> product.created [evt_1TG8b9RsNX6uL8fS4zmoObjM]
+2026-03-29 12:57:08  <--  [200] POST http://localhost:3000/api/webhooks/stripe [evt_1TG8b9RsNX6uL8fS4zmoObjM]
+2026-03-29 12:57:08   --> price.created [evt_1TG8bARsNX6uL8fSVL8Cu4Ji]
+2026-03-29 12:57:08  <--  [200] POST http://localhost:3000/api/webhooks/stripe [evt_1TG8bARsNX6uL8fSVL8Cu4Ji]
+2026-03-29 12:57:12   --> charge.succeeded [evt_3TG8bCRsNX6uL8fS0vbryIPo]
+2026-03-29 12:57:12  <--  [200] POST http://localhost:3000/api/webhooks/stripe [evt_3TG8bCRsNX6uL8fS0vbryIPo]
+2026-03-29 12:57:12   --> payment_intent.succeeded [evt_3TG8bCRsNX6uL8fS0YUc9lbP]
+2026-03-29 12:57:12  <--  [200] POST http://localhost:3000/api/webhooks/stripe [evt_3TG8bCRsNX6uL8fS0YUc9lbP]
+2026-03-29 12:57:12   --> checkout.session.completed [evt_1TG8bDRsNX6uL8fS1fT8bMCt]
+2026-03-29 12:57:12   --> payment_intent.created [evt_3TG8bCRsNX6uL8fS0Xeq02hx]
+2026-03-29 12:57:12  <--  [200] POST http://localhost:3000/api/webhooks/stripe [evt_3TG8bCRsNX6uL8fS0Xeq02hx]
+2026-03-29 12:57:12  <--  [500] POST http://localhost:3000/api/webhooks/stripe [evt_1TG8bDRsNX6uL8fS1fT8bMCt]
+2026-03-29 12:57:14   --> charge.updated [evt_3TG8bCRsNX6uL8fS0Xm49x2B]
+2026-03-29 12:57:14  <--  [200] POST http://localhost:3000/api/webhooks/stripe [evt_3TG8bCRsNX6uL8fS0Xm49x2B]
+2026-03-29 12:58:04   --> product.created [evt_1TG8c3RsNX6uL8fSJAdGXvB2]
+2026-03-29 12:58:04  <--  [200] POST http://localhost:3000/api/webhooks/stripe [evt_1TG8c3RsNX6uL8fSJAdGXvB2]
+2026-03-29 12:58:04   --> price.created [evt_1TG8c4RsNX6uL8fSBeePDoCw]
+2026-03-29 12:58:04  <--  [200] POST http://localhost:3000/api/webhooks/stripe [evt_1TG8c4RsNX6uL8fSBeePDoCw]
+2026-03-29 12:58:08   --> charge.succeeded [evt_3TG8c6RsNX6uL8fS1WWfeI8z]
+2026-03-29 12:58:08   --> payment_intent.succeeded [evt_3TG8c6RsNX6uL8fS1jSKQEuZ]
+2026-03-29 12:58:08   --> payment_intent.created [evt_3TG8c6RsNX6uL8fS1HuHrmYL]
+2026-03-29 12:58:08  <--  [200] POST http://localhost:3000/api/webhooks/stripe [evt_3TG8c6RsNX6uL8fS1WWfeI8z]
+2026-03-29 12:58:08  <--  [200] POST http://localhost:3000/api/webhooks/stripe [evt_3TG8c6RsNX6uL8fS1jSKQEuZ]
+2026-03-29 12:58:08  <--  [200] POST http://localhost:3000/api/webhooks/stripe [evt_3TG8c6RsNX6uL8fS1HuHrmYL]
+2026-03-29 12:58:08   --> checkout.session.completed [evt_1TG8c7RsNX6uL8fSqr2fT8nh]
+2026-03-29 12:58:08  <--  [500] POST http://localhost:3000/api/webhooks/stripe [evt_1TG8c7RsNX6uL8fSqr2fT8nh]
+2026-03-29 12:58:10   --> charge.updated [evt_3TG8c6RsNX6uL8fS11me7gWZ]
+2026-03-29 12:58:10  <--  [200] POST http://localhost:3000/api/webhooks/stripe [evt_3TG8c6RsNX6uL8fS11me7gWZ]
+2026-03-29 13:09:25   --> charge.succeeded [evt_3TG8mzRsNX6uL8fS0FXZlMyB]
+2026-03-29 13:09:25   --> payment_method.attached [evt_1TG8n3RsNX6uL8fSJYKwUpF5]
+2026-03-29 13:09:25   --> checkout.session.completed [evt_1TG8n3RsNX6uL8fSFwRYO1MF]
+2026-03-29 13:09:25  <--  [200] POST http://localhost:3000/api/webhooks/stripe [evt_1TG8n3RsNX6uL8fSJYKwUpF5]
+2026-03-29 13:09:25  <--  [200] POST http://localhost:3000/api/webhooks/stripe [evt_3TG8mzRsNX6uL8fS0FXZlMyB]
+2026-03-29 13:09:25   --> customer.updated [evt_1TG8n3RsNX6uL8fSaPkPxcuV]
+2026-03-29 13:09:25  <--  [200] POST http://localhost:3000/api/webhooks/stripe [evt_1TG8n3RsNX6uL8fSaPkPxcuV]
+2026-03-29 13:09:26  <--  [200] POST http://localhost:3000/api/webhooks/stripe [evt_1TG8n3RsNX6uL8fSFwRYO1MF]
+2026-03-29 13:09:26   --> customer.subscription.created [evt_1TG8n3RsNX6uL8fSztuEQPYI]
+2026-03-29 13:09:26  <--  [200] POST http://localhost:3000/api/webhooks/stripe [evt_1TG8n3RsNX6uL8fSztuEQPYI]
+2026-03-29 13:09:26   --> customer.subscription.updated [evt_1TG8n3RsNX6uL8fSPrrI4wAF]
+2026-03-29 13:09:26   --> payment_intent.succeeded [evt_3TG8mzRsNX6uL8fS0UbeZpKZ]
+2026-03-29 13:09:26  <--  [200] POST http://localhost:3000/api/webhooks/stripe [evt_3TG8mzRsNX6uL8fS0UbeZpKZ]
+2026-03-29 13:09:26  <--  [200] POST http://localhost:3000/api/webhooks/stripe [evt_1TG8n3RsNX6uL8fSPrrI4wAF]
+2026-03-29 13:09:26   --> payment_intent.created [evt_3TG8mzRsNX6uL8fS0kQ7rCJ6]
+2026-03-29 13:09:26  <--  [200] POST http://localhost:3000/api/webhooks/stripe [evt_3TG8mzRsNX6uL8fS0kQ7rCJ6]
+2026-03-29 13:09:26   --> invoice.created [evt_1TG8n3RsNX6uL8fSvAODy0WM]
+2026-03-29 13:09:26  <--  [200] POST http://localhost:3000/api/webhooks/stripe [evt_1TG8n3RsNX6uL8fSvAODy0WM]
+2026-03-29 13:09:26   --> invoice.finalized [evt_1TG8n3RsNX6uL8fS7ho5npY0]
+2026-03-29 13:09:26  <--  [200] POST http://localhost:3000/api/webhooks/stripe [evt_1TG8n3RsNX6uL8fS7ho5npY0]
+2026-03-29 13:09:26   --> invoice.updated [evt_1TG8n4RsNX6uL8fSKeviJBG4]
+2026-03-29 13:09:26  <--  [200] POST http://localhost:3000/api/webhooks/stripe [evt_1TG8n4RsNX6uL8fSKeviJBG4]
+2026-03-29 13:09:26   --> invoice.paid [evt_1TG8n4RsNX6uL8fSKAyroT5c]
+2026-03-29 13:09:26  <--  [200] POST http://localhost:3000/api/webhooks/stripe [evt_1TG8n4RsNX6uL8fSKAyroT5c]
+2026-03-29 13:09:26   --> invoice.payment_succeeded [evt_1TG8n4RsNX6uL8fSv0pFlvba]
+2026-03-29 13:09:26  <--  [200] POST http://localhost:3000/api/webhooks/stripe [evt_1TG8n4RsNX6uL8fSv0pFlvba]
+2026-03-29 13:09:26   --> customer.created [evt_1TG8n3RsNX6uL8fSyNNHJYN1]
+2026-03-29 13:09:26  <--  [200] POST http://localhost:3000/api/webhooks/stripe [evt_1TG8n3RsNX6uL8fSyNNHJYN1]
+2026-03-29 13:09:59   --> invoice_payment.paid [evt_1TG8nbRsNX6uL8fSScBQq7FC]
+2026-03-29 13:09:59  <--  [200] POST http://localhost:3000/api/webhooks/stripe [evt_1TG8nbRsNX6uL8fSScBQq7FC]
+Session expired, reconnecting...
+Ready! You are using Stripe API Version [2026-03-25.dahlia]. Your webhook signing secret is whsec_0b032ebea4093dad193cb2fb6e6f5b4bc8f2b879271bf02486b92d32c93ce371 (^C to quit)
+Session expired, reconnecting...
+Ready! You are using Stripe API Version [2026-03-25.dahlia]. Your webhook signing secret is whsec_0b032ebea4093dad193cb2fb6e6f5b4bc8f2b879271bf02486b92d32c93ce371 (^C to quit)
+Session expired, reconnecting...
+Ready! You are using Stripe API Version [2026-03-25.dahlia]. Your webhook signing secret is whsec_0b032ebea4093dad193cb2fb6e6f5b4bc8f2b879271bf02486b92d32c93ce371 (^C to quit)
+Session expired, reconnecting...
+Ready! You are using Stripe API Version [2026-03-25.dahlia]. Your webhook signing secret is whsec_0b032ebea4093dad193cb2fb6e6f5b4bc8f2b879271bf02486b92d32c93ce371 (^C to quit)
+Session expired, reconnecting...
+Ready! You are using Stripe API Version [2026-03-25.dahlia]. Your webhook signing secret is whsec_0b032ebea4093dad193cb2fb6e6f5b4bc8f2b879271bf02486b92d32c93ce371 (^C to quit)
+Session expired, reconnecting...
+Ready! You are using Stripe API Version [2026-03-25.dahlia]. Your webhook signing secret is whsec_0b032ebea4093dad193cb2fb6e6f5b4bc8f2b879271bf02486b92d32c93ce371 (^C to quit)
+Session expired, reconnecting...
+
+time="Sun, 29 Mar 2026 21:18:42 AEDT" level=fatal msg="Error while authenticating with Stripe: Post "https://api.stripe.com/v1/stripecli/sessions": dial tcp: lookup api.stripe.com: no such host"

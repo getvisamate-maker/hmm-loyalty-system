@@ -157,9 +157,9 @@ export default async function AdminDashboard(props: {
     
     activeCafes.forEach((c: any) => {
       // Pricing Model based on actual plans
-      if (c.plan_level === 'pro') monthlyRevenue += 79;
-      else if (c.plan_level === 'growth') monthlyRevenue += 39;
-      else monthlyRevenue += 19; // Standard
+      if (c.plan_level === 'pro') monthlyRevenue += 99;
+      else if (c.plan_level === 'growth') monthlyRevenue += 59;
+      else monthlyRevenue += 29; // Starter
     });
 
     const revenueShare = monthlyRevenue * 0.20; // 20%
@@ -199,9 +199,9 @@ export default async function AdminDashboard(props: {
   let mrr = 0;
   cafes.forEach((c: any) => {
     if(c.status === 'active') {
-      if (c.plan_level === 'pro') mrr += 299;
-      else if (c.plan_level === 'growth') mrr += 149;
-      else mrr += 49;
+      if (c.plan_level === 'pro') mrr += 99;
+      else if (c.plan_level === 'growth') mrr += 59;
+      else mrr += 29;
     }
   });
 

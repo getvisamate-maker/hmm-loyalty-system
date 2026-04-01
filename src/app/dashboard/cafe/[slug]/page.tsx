@@ -54,6 +54,10 @@ export default async function CafeManagementPage(props: {
   // Determine user's plan - default to 'standard' if missing
   const plan: PlanLevel = (cafe.plan_level as PlanLevel) || 'standard'; 
 
+  const isGrowthOrHigher = ['growth', 'pro'].includes(plan.toLowerCase());
+  // Temporarily force isPro to false globally since the plan is 'Coming Soon'
+  const isPro = false;
+
   // Fetch secret PIN - owner only
   const { data: secret } = await supabase
     .from("cafe_secrets")
@@ -187,9 +191,6 @@ export default async function CafeManagementPage(props: {
     currentMonthCount,
     optedInCount
   };
-
-  const isGrowthOrHigher = ['growth', 'pro'].includes(plan.toLowerCase());
-  const isPro = plan.toLowerCase() === 'pro';
 
   // 14-day trial logic
   const createdAtDate = new Date(cafe.created_at);

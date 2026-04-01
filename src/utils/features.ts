@@ -28,9 +28,9 @@ export function isFeatureEnabled(plan: PlanLevel, feature: string): boolean {
 
 export function getPlanLabel(plan: PlanLevel): string {
   switch (plan) {
-    case PLANS.STANDARD: return 'Standard';
+    case PLANS.STANDARD: return 'Starter';
     case PLANS.GROWTH: return 'Growth';
-    case PLANS.PRO: return 'Pro';
-    default: return 'Standard';
+    case PLANS.PRO: return 'Pro (Coming Soon)';
+    default: return 'Starter';
   }
 }

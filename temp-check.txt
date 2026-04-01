@@ -1,0 +1,301 @@
+                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                       <span className="relative inline-flex rounded-full h-3 w-3 bg-indigo-500"></span>
+                     </span>
+                     Live Activity
+                   </h3>
+                   {recentLogs.length > 0 ? (
+                     <div className="space-y-4">
+                      {recentLogs.map((log: any, i: number) => (
+                        <div key={i} className="flex gap-4">
+                          <div className="mt-1">
+                            <div className="w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                              <CoffeeIcon size={14} />
+                            </div>
+                          </div>
+                          <div className="flex-1 pb-4 border-b border-zinc-100 dark:border-zinc-800 last:border-0 last:pb-0">
+                            <p className="font-bold text-zinc-900 dark:text-white text-sm">
+                              {log.loyalty_cards?.profiles?.full_name || "A customer"}
+                            </p>
+                            <p suppressHydrationWarning className="text-xs text-zinc-500 mt-1">
+                              {new Date(log.created_at).toLocaleDateString('en-US', {
+                                month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                              })}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                     </div>
+                   ) : (
+                    <div className="h-40 flex flex-col items-center justify-center text-zinc-400">
+                      <Activity className="opacity-20 mb-2" size={32} />
+                      <p className="text-sm">Waiting for first scan...</p>
+                    </div>
+                   )}
+                </div>
+              </div>
+            </div>
+
+            {/* RIGHT COLUMN - BILLING & TABS */}
+            <div className="lg:col-span-4">
+              {/* Custom Tab Navigation */}
+              <div className="flex gap-2 overflow-x-auto no-scrollbar mb-6">
+                {TABS.map(tab => {
+                  const Icon = tab.icon;
+                  const isActive = activeTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`flex items-center gap-2 px-5 py-3 rounded-t-xl font-bold transition-all whitespace-nowrap border-b-2 ${
+                        isActive 
+                          ? "border-indigo-500 text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-900/10" 
+                          : "border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-900/30"
+                      }`}
+                    >
+                      <Icon size={18} />
+                      {tab.label}
+                    </button>
+                  )
+                })}
+              </div>
+
+              <div className="bg-white dark:bg-zinc-950 rounded-3xl border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-sm">
+                {/* TAB CONTENT - MARKETING SUITE */}
+                {activeTab === "marketing" && (
+                  <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <PremiumLock 
+                      isLocked={!isGrowthOrHigher} 
+                      title="Unlock The Growth Engine"
+                      description="Stop waiting for customers to come back. Upgrade to Growth to actively email promotions directly to your scanned audience directly from this dashboard."
+                      planLevel="Growth"
+                    >
+                      <div className="bg-white dark:bg-zinc-950 rounded-3xl border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-sm">
+                        <div className="grid grid-cols-1 lg:grid-cols-3">
+                          
+                          {/* Left Panel */}
+                          <div className="p-8 lg:p-10 lg:col-span-1 bg-zinc-900 border-b lg:border-b-0 lg:border-r border-zinc-800">
+                            <div className="mb-14">
+                              <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6 shadow-xl shadow-purple-500/20 text-white">
+                                <Megaphone size={28} />
+                              </div>
+                              <h2 className="text-3xl font-black text-white tracking-tight mb-3">Audience Lab</h2>
+                              <p className="text-zinc-300 leading-relaxed font-medium">
+                                Every time someone claims a loyalty stamp and opts-in, they are added to your digital audience below automatically.
+                              </p>
+                            </div>
+
+                            <div className="bg-zinc-800/80 rounded-2xl p-6 border border-zinc-700 shadow-sm relative overflow-hidden">
+                              <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/20 rounded-full blur-3xl -mr-10 -mt-10" />
+                              <p className="text-sm font-bold text-zinc-400 uppercase tracking-widest mb-2 relative z-10">Total Subscribers</p>
+                              <div className="flex items-end gap-3 relative z-10">
+                                <p className="text-6xl font-black text-white">{stats.optedInCount}</p>
+                                <p className="text-zinc-400 font-medium mb-2 relative top-1">people</p>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Right Panel */}
+                          <div className="p-8 lg:p-10 lg:col-span-2">
+                            <h3 className="text-xl font-bold text-zinc-900 dark:text-white mb-12">Send New Campaign</h3>
+                            <CampaignForm cafeId={cafe.id} audienceCount={stats.optedInCount || 0} />
+                          </div>
+                          
+                        </div>
+                      </div>
+                    </PremiumLock>
+                  </div>
+                )}
+
+                {/* TAB CONTENT - OVERVIEW */}
+                {activeTab === "overview" && (
+                  <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+                      {/* LEFT COLUMN - STATS CARDS */}
+                      <div className="lg:col-span-8 space-y-6">
+                        {/* Action Center Widget */}
+                        {isGrowthOrHigher && (
+                           <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-3xl p-1 shadow-lg shadow-purple-500/20">
+                           <div className="bg-white dark:bg-zinc-900 rounded-[22px] p-6 lg:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+                             <div className="flex-1">
+                               <h2 className="text-xl font-bold text-zinc-900 dark:text-white flex items-center gap-2 mb-2">
+                                 <Zap className="text-amber-500" /> Action Center Priority
+                               </h2>
+                               <p className="text-zinc-500 dark:text-zinc-400">
+                                 You have <strong className="text-indigo-600 dark:text-indigo-400">{stats.optedInCount} customers</strong> subscribed to updates. Send a weekend promo now to drive sales!
+                               </p>
+                             </div>
+                             <button 
+                              onClick={() => setActiveTab("marketing")}
+                              className="bg-zinc-900 dark:bg-white text-white dark:text-black px-6 py-3 rounded-xl font-bold whitespace-nowrap hover:scale-105 active:scale-95 transition-all shadow-xl">
+                               Create Campaign
+                             </button>
+                           </div>
+                         </div>
+                        )}
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                          <div className="bg-white dark:bg-zinc-950 p-6 rounded-3xl border border-zinc-100 dark:border-zinc-800 flex flex-col justify-between">
+                            <div className="w-12 h-12 bg-blue-50 dark:bg-blue-900/20 text-blue-500 rounded-xl flex items-center justify-center mb-6">
+                              <UsersRound size={24} />
+                            </div>
+                            <div>
+                              <p className="text-zinc-500 dark:text-zinc-400 font-medium mb-1">Total Customers</p>
+                              <div className="text-4xl font-black text-zinc-900 dark:text-white">{stats.totalCustomers}</div>
+                            </div>
+                          </div>
+                          
+                          <div className="bg-white dark:bg-zinc-950 p-6 rounded-3xl border border-zinc-100 dark:border-zinc-800 flex flex-col justify-between">
+                            <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-500 rounded-xl flex items-center justify-center mb-6">
+                              <Award size={24} />
+                            </div>
+                            <div>
+                              <p className="text-zinc-500 dark:text-zinc-400 font-medium mb-1">Stamps Issued</p>
+                              <div className="text-4xl font-black text-zinc-900 dark:text-white">{stats.totalStampsReal}</div>
+                            </div>
+                          </div>
+
+                          <div className="bg-white dark:bg-zinc-950 p-6 rounded-3xl border border-zinc-100 dark:border-zinc-800 flex flex-col justify-between">
+                            <div className="w-12 h-12 bg-green-50 dark:bg-green-900/20 text-green-500 rounded-xl flex items-center justify-center mb-6">
+                              <CoffeeIcon size={24} />
+                            </div>
+                            <div>
+                              <p className="text-zinc-500 dark:text-zinc-400 font-medium mb-1">Rewards Claimed</p>
+                              <div className="text-4xl font-black text-zinc-900 dark:text-white">{stats.totalRedeemedReal}</div>
+                            </div>
+                          </div>
+
+                          <div className="bg-black text-white p-6 rounded-3xl flex flex-col justify-between relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 p-6 opacity-20 group-hover:scale-110 group-hover:rotate-12 transition-transform duration-700">
+                              <TrendingUp size={100} />
+                            </div>
+                            <div className="relative z-10 w-12 h-12 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center mb-6">
+                              <Megaphone size={24} />
+                            </div>
+                            <div className="relative z-10">
+                              <p className="text-zinc-300 font-medium mb-1">Marketing Audience</p>
+                              <div className="text-4xl font-black">{stats.optedInCount}</div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                          <div className="lg:col-span-2 bg-white dark:bg-zinc-950 p-8 rounded-3xl border border-zinc-100 dark:border-zinc-800">
+                            <div className="flex items-center justify-between mb-8">
+                              <h3 className="text-xl font-bold text-zinc-900 dark:text-white">Store Traffic (30 Days)</h3>
+                              <span className="px-4 py-2 bg-zinc-100 dark:bg-zinc-900 rounded-lg text-sm font-bold text-zinc-600 dark:text-zinc-300">
+                                {stats.currentMonthCount} Scans this month
+                              </span>
+                            </div>
+                            <BusinessFlowChart data={dailyFlowArray.map(([day, count]: any) => ({ day, count }))} />
+                          </div>
+
+                          <div className="bg-white dark:bg-zinc-950 p-8 rounded-3xl border border-zinc-100 dark:border-zinc-800">
+                             <h3 className="text-xl font-bold text-zinc-900 dark:text-white mb-6 flex items-center gap-2">
+                               <span className="relative flex h-3 w-3">
+                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                                 <span className="relative inline-flex rounded-full h-3 w-3 bg-indigo-500"></span>
+                               </span>
+                               Live Activity
+                             </h3>
+                             {recentLogs.length > 0 ? (
+                               <div className="space-y-4">
+                                {recentLogs.map((log: any, i: number) => (
+                                  <div key={i} className="flex gap-4">
+                                    <div className="mt-1">
+                                      <div className="w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                                        <CoffeeIcon size={14} />
+                                      </div>
+                                    </div>
+                                    <div className="flex-1 pb-4 border-b border-zinc-100 dark:border-zinc-800 last:border-0 last:pb-0">
+                                      <p className="font-bold text-zinc-900 dark:text-white text-sm">
+                                        {log.loyalty_cards?.profiles?.full_name || "A customer"}
+                                      </p>
+                                      <p suppressHydrationWarning className="text-xs text-zinc-500 mt-1">
+                                        {new Date(log.created_at).toLocaleDateString('en-US', {
+                                          month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                                        })}
+                                      </p>
+                                    </div>
+                                  </div>
+                                ))}
+                               </div>
+                             ) : (
+                              <div className="h-40 flex flex-col items-center justify-center text-zinc-400">
+                                <Activity className="opacity-20 mb-2" size={32} />
+                                <p className="text-sm">Waiting for first scan...</p>
+                              </div>
+                             )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* RIGHT COLUMN - BILLING & TABS */}
+                      <div className="lg:col-span-4">
+                        {/* Custom Tab Navigation */}
+                        <div className="flex gap-2 overflow-x-auto no-scrollbar mb-6">
+                          {TABS.map(tab => {
+                            const Icon = tab.icon;
+                            const isActive = activeTab === tab.id;
+                            return (
+                              <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id)}
+                                className={`flex items-center gap-2 px-5 py-3 rounded-t-xl font-bold transition-all whitespace-nowrap border-b-2 ${
+                                  isActive 
+                                    ? "border-indigo-500 text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-900/10" 
+                                    : "border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-900/30"
+                                }`}
+                              >
+                                <Icon size={18} />
+                                {tab.label}
+                              </button>
+                            )
+                          })}
+                        </div>
+
+                        <div className="bg-white dark:bg-zinc-950 rounded-3xl border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-sm">
+                          {/* TAB CONTENT - MARKETING SUITE */}
+                          {activeTab === "marketing" && (
+                            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                              <PremiumLock 
+                                isLocked={!isGrowthOrHigher} 
+                                title="Unlock The Growth Engine"
+                                description="Stop waiting for customers to come back. Upgrade to Growth to actively email promotions directly to your scanned audience directly from this dashboard."
+                                planLevel="Growth"
+                              >
+                                <div className="bg-white dark:bg-zinc-950 rounded-3xl border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-sm">
+                                  <div className="grid grid-cols-1 lg:grid-cols-3">
+                                    
+                                    {/* Left Panel */}
+                                    <div className="p-8 lg:p-10 lg:col-span-1 bg-zinc-900 border-b lg:border-b-0 lg:border-r border-zinc-800">
+                                      <div className="mb-14">
+                                        <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6 shadow-xl shadow-purple-500/20 text-white">
+                                          <Megaphone size={28} />
+                                        </div>
+                                        <h2 className="text-3xl font-black text-white tracking-tight mb-3">Audience Lab</h2>
+                                        <p className="text-zinc-300 leading-relaxed font-medium">
+                                          Every time someone claims a loyalty stamp and opts-in, they are added to your digital audience below automatically.
+                                        </p>
+                                      </div>
+
+                                      <div className="bg-zinc-800/80 rounded-2xl p-6 border border-zinc-700 shadow-sm relative overflow-hidden">
+                                        <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/20 rounded-full blur-3xl -mr-10 -mt-10" />
+                                        <p className="text-sm font-bold text-zinc-400 uppercase tracking-widest mb-2 relative z-10">Total Subscribers</p>
+                                        <div className="flex items-end gap-3 relative z-10">
+                                          <p className="text-6xl font-black text-white">{stats.optedInCount}</p>
+                                          <p className="text-zinc-400 font-medium mb-2 relative top-1">people</p>
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    {/* Right Panel */}
+                                    <div className="p-8 lg:p-10 lg:col-span-2">
+                                      <h3 className="text-xl font-bold text-zinc-900 dark:text-white mb-12">Send New Campaign</h3>
+                                      <CampaignForm cafeId={cafe.id} audienceCount={stats.optedInCount || 0} />
+                                    </div>
+                                    
+                                  </div>
+                                </div>
+                              </PremiumLock>
+                            </div>
+                          )}
