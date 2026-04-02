@@ -2,6 +2,7 @@
 
 import { createClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
+import { Resend } from "resend";
 
 const getAdminClient = () => {
   if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
@@ -17,6 +18,10 @@ const getAdminClient = () => {
 export async function approvePartner(userId: string) {
   try {
     const supabase = getAdminClient();
+    
+    // 1. Fetch user to get email before updating
+    const { data: { user } } = await supabase.auth.admin.getUserById(userId);
+    const userEmail = user?.email;
 
     const { error } = await supabase
       .from("profiles")
@@ -28,6 +33,17 @@ export async function approvePartner(userId: string) {
       .eq("id", userId);
 
     if (error) throw error;
+    
+    // 2. Send email if we found it
+    if (userEmail && process.env.RESEND_API_KEY) {
+      const resend = new Resend(process.env.RESEND_API_KEY);
+      await resend.emails.send({
+        from: 'Hmm Loyalty <hello@hmmloyalty.com>',
+        to: userEmail,
+        subject: 'Your Hmm Loyalty Dashboard is Ready! 🎉',
+        html: 'Hi there!<br><br>We saw that you recently signed up. We have just upgraded your account to give you <strong>full owner access</strong>!<br><br>You can now log in and access your cafe dashboard to start setting up your digital loyalty program, manage customers, and launch your growth features.<br><br><a href="https://hmmloyalty.com/dashboard">Access Your Dashboard</a><br><br>We are thrilled to have you onboard. If you have any questions, just reply to this email!<br><br>Best regards,<br>The Hmm Loyalty Team'
+      });
+    }
 
     revalidatePath("/admin");
     return { success: true };
