@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Coffee, Gift, ScanLine, X } from "lucide-react";
+import { Coffee, Gift, ScanLine, X, Heart, Star, Flame, Zap, Droplet, Sun, Trophy } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
 import { addStamp } from "./actions";
@@ -16,19 +16,27 @@ interface LoyaltyCardProps {
   stampsRequired: number;
   currentStamps: number;
   logoUrl?: string;
+  description?: string;
   primaryColor?: string; // e.g. #4f46e5
   secondaryColor?: string; // e.g. #fbbf24
+  theme?: string;
+  stampIcon?: string;
+  backgroundUrl?: string;
 }
 
 export function LoyaltyCard({ 
   cafeId, 
   cardId, 
   cafeName, 
+  description,
   stampsRequired, 
   currentStamps, 
   logoUrl,
   primaryColor = "#4f46e5",
-  secondaryColor = "#fbbf24"
+  secondaryColor = "#fbbf24",
+  theme = "dark",
+  stampIcon = "coffee",
+  backgroundUrl
 }: LoyaltyCardProps) {
   const [celebrate, setCelebrate] = useState(false);
 
@@ -119,6 +127,32 @@ export function LoyaltyCard({
     }
   };
 
+  const getCardStyle = () => {
+    let base: any = { 
+      boxShadow: `0 25px 50px -12px ${primaryColor}40` 
+    };
+    if (backgroundUrl) {
+      base.backgroundImage = `linear-gradient(to bottom right, rgba(24, 24, 27, 0.85), rgba(0, 0, 0, 0.95)), url(${backgroundUrl})`;
+      base.backgroundSize = 'cover';
+      base.backgroundPosition = 'center';
+    }
+    return base;
+  };
+
+  const renderIcon = (size: number) => {
+    const props = { size, strokeWidth: 3.5 };
+    switch(stampIcon?.toLowerCase()) {
+      case 'heart': return <Heart {...props} />;
+      case 'star': return <Star {...props} />;
+      case 'flame': return <Flame {...props} />;
+      case 'zap': return <Zap {...props} />;
+      case 'droplet': return <Droplet {...props} />;
+      case 'sun': return <Sun {...props} />;
+      case 'trophy': return <Trophy {...props} />;
+      default: return <Coffee {...props} />;
+    }
+  };
+
   return (
     <div className="w-full max-w-sm mx-auto relative flex flex-col items-center">
       <AnimatePresence>
@@ -165,10 +199,10 @@ export function LoyaltyCard({
         
         {/* Card Component */}
         <div 
-          className="relative w-full aspect-[4/5] bg-gradient-to-br from-zinc-800/80 to-black/80 backdrop-blur-xl rounded-[2.5rem] shadow-2xl overflow-hidden border border-white/10 flex flex-col p-8 justify-between"
-          style={{ 
-            boxShadow: `0 25px 50px -12px ${primaryColor}20` // Subtle glow of brand color
-          }}
+          className={`relative w-full aspect-[4/5] backdrop-blur-xl rounded-[2.5rem] shadow-2xl overflow-hidden border border-white/10 flex flex-col p-8 justify-between ${
+            backgroundUrl ? "" : "bg-gradient-to-br from-zinc-800/80 to-black/80"
+          }`}
+          style={getCardStyle()}
         >
             {/* Ambient background glows */}
             <div 
@@ -188,6 +222,11 @@ export function LoyaltyCard({
                   className="text-[10px] font-bold uppercase tracking-[0.2em] mt-2 opacity-90"
                   style={{ color: `${primaryColor}aa` }} // Lighter version of primary
                 >Loyalty Pass</p>
+                {description && (
+                  <p className="text-xs text-white/80 mt-2 font-medium leading-relaxed max-w-[240px]">
+                    {description}
+                  </p>
+                )}
               </div>
               {logoUrl ? (
                 <img src={logoUrl} alt={cafeName} className="w-12 h-12 rounded-full border border-white/20 bg-zinc-800 object-cover shadow-lg" />
@@ -232,13 +271,13 @@ export function LoyaltyCard({
                       }`}
                     >
                       {isStamped ? (
-                        <motion.div
+                        <motion.div 
                           initial={{ scale: 0, rotate: -45 }}
                           animate={{ scale: 1, rotate: 0 }}
                           transition={{ type: "spring", stiffness: 300, damping: 20 }}
                           style={{ color: primaryColor }}
                         >
-                          <Coffee size={stampsRequired > 10 ? 14 : 20} strokeWidth={3.5} />
+                          {renderIcon(stampsRequired > 10 ? 14 : 20)}
                         </motion.div>
                       ) : (
                          <div className="w-1.5 h-1.5 rounded-full bg-white/10" />
@@ -266,8 +305,8 @@ export function LoyaltyCard({
                  </div>
                ) : (
                  <div className="text-right">
-                    <p className="text-[10px] text-zinc-500 font-medium uppercase tracking-wide">Next Reward</p>
-                    <p className="text-xs text-zinc-300 font-medium mt-0.5">Free Coffee</p>
+                   <p className="text-[10px] text-zinc-500 font-medium uppercase tracking-wide">Next Reward</p>
+                   <p className="text-xs text-zinc-300 font-medium mt-0.5">Free Reward</p>
                  </div>
                )}
             </div>

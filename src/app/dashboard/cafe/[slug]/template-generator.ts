@@ -1,4 +1,4 @@
-export async function downloadMarketingAsset(type: string, cafeName: string) {
+export async function downloadMarketingAsset(type: string, cafeName: string, slug?: string) {
     let width = 1080;
     let height = 1080;
     let svg = '';

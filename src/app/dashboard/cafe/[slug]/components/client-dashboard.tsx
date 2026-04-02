@@ -11,6 +11,7 @@ import { BusinessFlowChart } from "../flow-chart";
 import { CafeSettingsForm } from "../settings-form";
 import { LogoUpload } from "../logo-upload";
 import { CampaignForm } from "../campaign-form";
+import { GrowthForm } from "../growth-form";
 import { QrCodeGenerator } from "../qr-generator";
 
 type FeatureLockProps = {
@@ -111,14 +112,12 @@ export default function ModernCafeDashboard({
           </Link>
         </div>
 
-        <TrialLock isExpired={isTrialExpired}>
+          <TrialLock isExpired={isTrialExpired}>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
-            
-            {/* LEFT COLUMN - CONTENT */}
-            <div className="lg:col-span-8 space-y-6">
-
-              {/* TABS NAVIGATION */}
+            <div className={`grid grid-cols-1 ${activeTab === 'settings' ? 'lg:grid-cols-1' : 'lg:grid-cols-12'} gap-6 lg:gap-8`}>
+              
+              {/* LEFT COLUMN - CONTENT */}
+              <div className={`${activeTab === 'settings' ? 'w-full' : 'lg:col-span-8'} space-y-6`}>              {/* TABS NAVIGATION */}
               <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
                 {TABS.map(tab => {
                   const Icon = tab.icon;
@@ -249,7 +248,12 @@ export default function ModernCafeDashboard({
                       
                       <div className="bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 mb-8">
                         <h3 className="font-bold text-lg mb-4 text-zinc-900 dark:text-white">Send Campaign</h3>
-                        <CampaignForm cafeId={cafe.id} audienceCount={stats.optedInCount || 0} />
+                        <CampaignForm cafeId={cafe.id} audienceCount={stats.optedInCount || 0} cafeName={cafe.name} slug={cafe.slug} />
+                      </div>
+                      
+                      <div className="bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 mb-8">
+                        <h3 className="font-bold text-lg mb-4 text-zinc-900 dark:text-white">Automations & Growth Tracker</h3>
+                        <GrowthForm cafe={cafe} slug={cafe.slug} />
                       </div>
                     </div>
                   </PremiumLock>
@@ -278,6 +282,7 @@ export default function ModernCafeDashboard({
             </div>
 
             {/* RIGHT COLUMN - SIDEBAR */}
+            {activeTab !== 'settings' && (
             <div className="lg:col-span-4 space-y-6">
 
               {/* Counter Code Widget */}
@@ -303,12 +308,11 @@ export default function ModernCafeDashboard({
                   </p>
                 </div>
               </div>
-
             </div>
+            )}
           </div>
 
         </TrialLock>
-
       </div>
     </div>
   );

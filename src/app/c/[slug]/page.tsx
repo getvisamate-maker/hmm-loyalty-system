@@ -10,8 +10,12 @@ import { ArrowLeft, AlertTriangle } from "lucide-react";
 // Ensure page is not statically generated so auth works
 export const dynamic = "force-dynamic";
 
-export default async function CustomerPage(props: { params: Promise<{ slug: string }> }) {
+export default async function CustomerPage(props: { 
+  params: Promise<{ slug: string }>,
+  searchParams: Promise<{ celebrate?: string, reviewUrl?: string }>
+}) {
   const resolvedParams = await props.params;
+  const resolvedSearchParams = await props.searchParams;
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
 
@@ -144,13 +148,41 @@ export default async function CustomerPage(props: { params: Promise<{ slug: stri
   }
 
   return (
-    <div className="min-h-[100dvh] bg-[#050505] text-white font-sans overflow-hidden relative selection:bg-indigo-500/30 flex flex-col">
-      
-      {/* Dynamic Background Gradients */}
-      <div className="fixed inset-0 z-0 pointer-events-none">
-         <div className="absolute top-[-10%] left-[-20%] w-[80%] h-[60%] rounded-full bg-indigo-900/20 blur-[100px] animate-pulse" />
-         <div className="absolute bottom-[-10%] right-[-20%] w-[80%] h-[60%] rounded-full bg-blue-900/10 blur-[100px]" />
+    <div className="min-h-[100dvh] bg-[#050505] text-white font-sans overflow-hidden relative selection:bg-indigo-500/30 flex flex-col">              
+      {/* Dynamic Background Gradients */}            
+      <div className="fixed inset-0 z-0 pointer-events-none">                    
+        <div className="absolute top-[-10%] left-[-20%] w-[80%] h-[60%] rounded-full bg-indigo-900/20 blur-[100px] animate-pulse" />                    
+        <div className="absolute bottom-[-10%] right-[-20%] w-[80%] h-[60%] rounded-full bg-blue-900/10 blur-[100px]" />                             
       </div>
+
+      {resolvedSearchParams.reviewUrl && (
+        <div className="fixed top-0 left-0 w-full h-full bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-6 animate-in fade-in duration-300">
+          <div className="bg-zinc-900 border border-zinc-800 p-8 rounded-3xl max-w-sm w-full text-center shadow-2xl relative">
+            <div className="mx-auto w-16 h-16 bg-yellow-500/10 rounded-full flex items-center justify-center mb-6">
+              <span className="text-3xl">⭐</span>
+            </div>
+            <h2 className="text-2xl font-black text-white mb-2">Loving {cafe.name}?</h2>
+            <p className="text-zinc-400 mb-8 text-sm">We&apos;re so glad you&apos;re a loyal customer! Would you mind taking a quick second to leave us a 5-star review?</p>
+            <div className="flex flex-col gap-3">
+              <a 
+                href={resolvedSearchParams.reviewUrl} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="w-full py-4 bg-white text-black font-bold rounded-2xl hover:scale-[1.02] active:scale-[0.98] transition-all text-sm shadow-xl shadow-white/10"
+              >
+                Yes, leave a review
+              </a>
+              <Link 
+                href={`/c/${resolvedParams.slug}`} 
+                replace
+                className="w-full py-4 text-zinc-500 font-bold rounded-2xl hover:bg-zinc-800 transition-all text-sm"
+              >
+                No, maybe later
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Navigation Header */}
       <nav className="relative z-50 px-6 py-6 flex justify-between items-center w-full max-w-md mx-auto">
@@ -170,18 +202,20 @@ export default async function CustomerPage(props: { params: Promise<{ slug: stri
       <main className="relative z-10 flex-1 flex flex-col items-center w-full max-w-md mx-auto px-6 pb-8 pt-4">
         <div className="w-full h-full flex flex-col justify-between">
             <div className="space-y-6">
-                <LoyaltyCard 
-                    cafeId={cafe.id}
-                    cardId={card.id}
-                    cafeName={cafe.name}
-                    stampsRequired={cafe.stamps_required}
-                    currentStamps={card?.stamp_count || 0}
-                    logoUrl={cafe.logo_url}
-                    primaryColor={cafe.primary_color}
-                    secondaryColor={cafe.secondary_color}
-                />
-                
-                <DailyDelight />
+              <LoyaltyCard 
+                cafeId={cafe.id}
+                cardId={card.id}
+                cafeName={cafe.name}
+                description={cafe.description}
+                stampsRequired={cafe.stamps_required}
+                currentStamps={card?.stamp_count || 0}
+                logoUrl={cafe.logo_url}
+                primaryColor={cafe.primary_color}
+                secondaryColor={cafe.secondary_color}
+                theme={cafe.theme}
+                stampIcon={cafe.stamp_icon}
+                backgroundUrl={cafe.background_url}
+              />                <DailyDelight />
             </div>
 
             <div className="mt-8 text-center pb-safe">

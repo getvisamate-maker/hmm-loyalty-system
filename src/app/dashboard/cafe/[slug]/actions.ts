@@ -4,6 +4,7 @@ import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { FEATURES, isFeatureEnabled, PlanLevel } from "@/utils/features";
+import { Resend } from "resend";
 
 export async function createPromotion(cafeId: string, title: string, body: string, durationDays: number = 7) {
   const cookieStore = await cookies();
@@ -16,7 +17,7 @@ export async function createPromotion(cafeId: string, title: string, body: strin
   // Verify ownership and plan
   const { data: cafe, error: cafeError } = await supabase
     .from("cafes")
-    .select("id, plan_level")
+    .select("id, name, plan_level")
     .eq("id", cafeId)
     .eq("owner_id", user.id)
     .single();
@@ -45,18 +46,51 @@ export async function createPromotion(cafeId: string, title: string, body: strin
     throw new Error("Failed to send promotion");
   }
 
-  // --- EMAIL DISPATCH SIMULATION (Placeholder for Resend/Sendgrid) ---
-  // In a real-world production app, you would:
-  // 1. Fetch opted-in users: 
-  //    const { data: audience } = await supabase.from('loyalty_cards').select('profile_id').eq('cafe_id', cafeId).eq('marketing_opt_in', true);
-  // 2. Fetch their actual emails from profiles or auth using edge function or admin client
-  // 3. Dispatch emails via Resend API: 
-  //    await resend.emails.send({ from: 'hello@hmmloyalty.com', to: [...emails], subject: title, html: body })
-  
-  console.log(`[EMAIL DISPATCHER] Successfully queued email campaign: "${title}" for Cafe ID: ${cafeId}`);
-  console.log(`[EMAIL DISPATCHER] Content preview: ${body.substring(0, 50)}...`);
-  console.log(`[EMAIL DISPATCHER] Note: Actual SMTP dispatch requires an email provider like Resend or SendGrid.`);
+  // --- EMAIL DISPATCH ---
+  if (!process.env.RESEND_API_KEY) {
+    console.warn("⚠️ Missing RESEND_API_KEY. Promotion saved but emails not sent.");
+    return { success: true };
+  }
 
+  const resend = new Resend(process.env.RESEND_API_KEY);
+
+  // 1. Fetch opted-in users and their emails via profiles relation
+  const { data: audience } = await supabase
+    .from('loyalty_cards')
+    .select('user_id, profiles:user_id(email, marketing_consent)')
+    .eq('cafe_id', cafeId);
+
+  const optedInEmails = audience
+    ?.filter(a => {
+        const profile = a.profiles as any;
+        return profile?.marketing_consent && profile?.email;
+    })
+    .map(a => (a.profiles as any).email);
+
+  if (optedInEmails && optedInEmails.length > 0) {
+    try {
+        await resend.emails.send({
+            from: 'Promotions <hello@hmmloyalty.com>', // MUST Be verified in Resend Dashboard
+            to: optedInEmails, // Can pass an array of up to 50 emails directly. For production > 50, batch loop.
+            subject: title,
+            html: `
+                <div style="font-family: sans-serif; padding: 20px; color: #333;">
+                <h2>${title}</h2>
+                <p>A message from <strong>${cafe.name}</strong>:</p>
+                <div style="padding: 15px; border-left: 4px solid #6366f1; background: #f9fafb; margin-top: 20px;">
+                    ${body.replace(/\n/g, '<br/>')}
+                </div>
+                </div>
+            `
+        });
+        console.log(`✅ [EMAIL DISPATCHER] Successfully sent campaign "${title}" to ${optedInEmails.length} users.`);
+    } catch (e) {
+        console.error("❌ [EMAIL ERROR] Failed to send promotional emails:", e);
+    }
+  } else {
+    console.log("⚠️ No opted-in users found. No emails sent.");
+  }
+  
   return { success: true };
 }
 
@@ -91,14 +125,36 @@ export async function updateCafeSettings(cafeId: string, data: any, slug: string
 
   // Check Custom Branding permissions
   if (
-    (publicData.logo_url || publicData.primary_color || publicData.secondary_color) && 
+    (publicData.logo_url || publicData.primary_color || publicData.secondary_color || publicData.stamp_icon || publicData.theme || publicData.background_url) && 
     !isFeatureEnabled(plan, FEATURES.CUSTOM_BRANDING)
   ) {
     // Strip branding fields if not allowed
     delete publicData.logo_url;
     delete publicData.primary_color;
     delete publicData.secondary_color;
+    delete publicData.stamp_icon;
+    delete publicData.theme;
+    delete publicData.background_url;
     // Alternatively, throw error. But stripping is safer for partial updates.
+  }
+
+  // Check Win-Back permissions
+  if (
+    (publicData.enable_win_back !== undefined || publicData.win_back_days !== undefined || publicData.win_back_reward_stamps !== undefined) &&
+    !isFeatureEnabled(plan, FEATURES.WIN_BACK)
+  ) {
+    delete publicData.enable_win_back;
+    delete publicData.win_back_days;
+    delete publicData.win_back_reward_stamps;
+  }
+
+  // Check Review Booster permissions
+  if (
+    (publicData.google_review_url !== undefined || publicData.review_threshold !== undefined) &&
+    !isFeatureEnabled(plan, FEATURES.REVIEW_BOOSTER)
+  ) {
+    delete publicData.google_review_url;
+    delete publicData.review_threshold;
   }
 
   // Update public info
@@ -107,13 +163,11 @@ export async function updateCafeSettings(cafeId: string, data: any, slug: string
     .update(publicData)
     .eq("id", cafeId)
     .eq("owner_id", user.id);
-
+  
   if (error) {
     console.error("Error updating settings:", error);
-    throw new Error("Failed to update settings");
-  }
-
-  // Update secrets if provided
+    throw new Error("Failed to update settings: " + error.message);
+  }  // Update secrets if provided
   if (pin_code !== undefined) {
     // Check if secret exists first
     const { data: existingSecret } = await supabase

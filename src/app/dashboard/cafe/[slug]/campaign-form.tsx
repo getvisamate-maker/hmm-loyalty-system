@@ -32,7 +32,7 @@ const TEMPLATES = [
   }
 ];
 
-export function CampaignForm({ cafeId, audienceCount, cafeName = "Your Cafe" }: { cafeId: string, audienceCount: number, cafeName?: string }) {
+export function CampaignForm({ cafeId, audienceCount, cafeName = "Your Cafe", slug }: { cafeId: string, audienceCount: number, cafeName?: string, slug?: string }) {
   const [status, setStatus] = useState<"idle" | "loading" | "success">("idle");
   const [activeTemplate, setActiveTemplate] = useState(TEMPLATES[0]);
   const [subject, setSubject] = useState(TEMPLATES[0].subject.replace("[Cafe Name]", cafeName));
@@ -49,7 +49,7 @@ export function CampaignForm({ cafeId, audienceCount, cafeName = "Your Cafe" }: 
     document.body.appendChild(toast);
     
     try {
-        await downloadMarketingAsset(type, cafeName || "Your Cafe");
+        await downloadMarketingAsset(type, cafeName || "Your Cafe", slug || "");
         toast.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Download Complete!`;
         toast.classList.replace("bg-indigo-600", "bg-emerald-600");
     } catch (e) {
@@ -94,8 +94,8 @@ export function CampaignForm({ cafeId, audienceCount, cafeName = "Your Cafe" }: 
   };
 
   return (
-    <div className="flex flex-col xl:flex-row gap-8">
-      <div className="flex-1 space-y-8">
+      <div className="flex flex-col lg:flex-row gap-8 w-full max-w-full overflow-hidden">
+        <div className="flex-1 min-w-0 space-y-8">
         <div>
           <h3 className="text-sm font-bold text-zinc-900 dark:text-white mb-3 flex items-center gap-2">
             <LayoutTemplate size={16} className="text-indigo-500" />
@@ -195,16 +195,14 @@ export function CampaignForm({ cafeId, audienceCount, cafeName = "Your Cafe" }: 
         </form>
       </div>
 
-      <div className="w-full xl:w-[400px] flex-shrink-0 space-y-6">
-        <div>
-          <h3 className="text-sm font-bold text-zinc-900 dark:text-white mb-3">
-            Marketing Toolkit
-          </h3>
-          <p className="text-sm text-zinc-500 mb-6">
-            Grow your audience faster with these ready-to-use promotional assets. Download and print these for your physical space, or post them on your social media.
-          </p>
-          
-          <div className="space-y-3">
+        <div className="w-full lg:w-[350px] xl:w-[400px] flex-shrink-0 space-y-6">
+          <div>
+            <h3 className="text-sm font-bold text-zinc-900 dark:text-white mb-3">
+              Marketing Toolkit
+            </h3>
+            <p className="text-sm text-zinc-500 mb-6 leading-relaxed break-words">
+              Grow your audience faster with these ready-to-use promotional assets. Download and print these for your physical space, or post them on your social media.
+            </p>          <div className="space-y-3">
             <button type="button" onClick={() => handleDownload("A4_Window_Poster.pdf")} className="w-full flex items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-xl hover:border-indigo-500 transition-all group">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">

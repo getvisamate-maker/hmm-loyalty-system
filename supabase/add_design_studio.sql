@@ -1,0 +1,1 @@
+ALTER TABLE public.cafes ADD COLUMN IF NOT EXISTS stamp_icon text DEFAULT 'coffee'; ALTER TABLE public.cafes ADD COLUMN IF NOT EXISTS theme text DEFAULT 'glassmorphism'; ALTER TABLE public.cafes ADD COLUMN IF NOT EXISTS background_url text;

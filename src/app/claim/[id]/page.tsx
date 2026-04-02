@@ -30,7 +30,7 @@ export default async function ClaimPage({
   // 2. Fetch Cafe Details (Need slug for redirect)
   const { data: cafe, error: cafeError } = await supabase
     .from("cafes")
-    .select("id, name, slug, security_mode")
+    .select("id, name, slug, security_mode, google_review_url, review_threshold, plan_level")
     .eq("id", cafeId)
     .single();
 
@@ -65,9 +65,32 @@ export default async function ClaimPage({
   // 4. Attempt to Add Stamp
   // Pass 'dynamic' as pin, and the actual token
   const result = await addStamp(cafeId, card.id, "dynamic", `/c/${cafe.slug}`, token);
-
+  
   if (result.success) {
-    return redirect(`/c/${cafe.slug}?celebrate=true`);
+    let redirectUrl = `/c/${cafe.slug}?celebrate=true`;
+
+    // 5. Feature: Google Review Booster Check
+    try {
+      const { data: updatedCard } = await supabase
+        .from("loyalty_cards")
+        .select("stamp_count")
+        .eq("id", card.id)
+        .single();
+
+      if (
+        updatedCard && 
+        cafe.google_review_url && 
+        cafe.review_threshold && 
+        updatedCard.stamp_count === cafe.review_threshold &&
+        (cafe.plan_level === 'growth' || cafe.plan_level === 'pro')
+      ) {
+        redirectUrl += `&reviewUrl=${encodeURIComponent(cafe.google_review_url)}`;
+      }
+    } catch(e) {
+      console.warn("Failed to evaluate review booster rule:", e);
+    }
+
+    return redirect(redirectUrl);
   } else {
     return <ErrorScreen message={result.message || "Failed to add stamp."} cafeSlug={cafe.slug} />;
   }
