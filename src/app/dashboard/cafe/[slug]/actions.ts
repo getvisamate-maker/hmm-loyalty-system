@@ -55,27 +55,20 @@ export async function createPromotion(cafeId: string, title: string, body: strin
 
   const resend = new Resend(process.env.RESEND_API_KEY);
 
-  // 1. Fetch opted-in users (checking marketing consent from profiles)
+  // 1. Fetch opted-in users directly since profiles now has the email column safely!
   const { data: audience, error: audErr } = await supabase
     .from('loyalty_cards')
-    .select('user_id, profiles:user_id(marketing_consent)')
+    .select('user_id, profiles:user_id(email, marketing_consent)')
     .eq('cafe_id', cafeId);
 
   if (audErr) console.error("Error fetching audience:", audErr);
 
-  // 2. We use the admin client to look up real email addresses since they are hidden in auth.users
-  const adminClient = createAdminClient();
-  
-  const { data: { users } } = await adminClient.auth.admin.listUsers({ page: 1, perPage: 1000 });
-  const emailMap = new Map(users?.map(u => [u.id, u.email]) || []);
-
   const optedInEmails = audience
     ?.filter(a => {
         const profile = a.profiles as any;
-        const email = emailMap.get(a.user_id);
-        return profile?.marketing_consent && email;
+        return profile?.marketing_consent && profile?.email;
     })
-    .map(a => emailMap.get(a.user_id) as string);
+    .map(a => (a.profiles as any).email);
 
   if (optedInEmails && optedInEmails.length > 0) {
     try {
