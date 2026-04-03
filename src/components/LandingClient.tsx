@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { Coffee, QrCode, BarChart3, CheckCircle2, Gift } from "lucide-react";
+import { Coffee, QrCode, BarChart3, CheckCircle2, Gift, ShieldCheck, CreditCard, Lock } from "lucide-react";
 import { useState } from "react";
 
 export function HeroSection() {
@@ -130,46 +130,17 @@ export function HeroSection() {
             </div>
           </motion.div>
 
-          {/* Floating QR Element */}
+          {/* Floating Badge Element */}
           <motion.div 
             animate={{ y: [0, 10, 0] }}
             transition={{ repeat: Infinity, duration: 5, ease: "easeInOut", delay: 1 }}
-            className="absolute z-30 bottom-10 right-[10%] md:right-[25%] w-24 h-24 bg-white rounded-2xl p-2 shadow-[0_20px_40px_rgba(0,0,0,0.5)] flex items-center justify-center transform rotate-6 border-4 border-zinc-800"
+            className="absolute z-30 bottom-10 right-[10%] md:right-[25%] w-24 h-24 bg-gradient-to-br from-fuchsia-500 to-purple-600 rounded-2xl p-4 shadow-[0_20px_40px_rgba(168,85,247,0.4)] flex flex-col items-center justify-center transform rotate-6 border border-white/20 backdrop-blur-md"
           >
-            <div className="relative w-full h-full bg-white rounded-xl p-2 flex flex-col justify-between">
-              {/* Corner squares */}
-              <div className="flex justify-between">
-                <div className="w-5 h-5 border-[3px] border-black rounded-sm flex items-center justify-center">
-                  <div className="w-2 h-2 bg-black rounded-sm"></div>
-                </div>
-                <div className="w-5 h-5 border-[3px] border-black rounded-sm flex items-center justify-center">
-                  <div className="w-2 h-2 bg-black rounded-sm"></div>
-                </div>
-              </div>
-              
-              {/* Random grid dots */}
-              <div className="flex-1 flex flex-wrap gap-1 p-1 items-center justify-center">
-                <div className="w-2 h-2 bg-black rounded-sm"></div>
-                <div className="w-2 h-2 bg-black rounded-sm"></div>
-                <div className="w-3 h-2 bg-black rounded-sm"></div>
-                <div className="w-2 h-4 bg-black rounded-sm"></div>
-                <div className="w-2 h-2 bg-black rounded-sm"></div>
-                <div className="w-4 h-2 bg-black rounded-sm"></div>
-                <div className="w-2 h-2 bg-black rounded-sm"></div>
-                <div className="w-2 h-3 bg-black rounded-sm"></div>
-              </div>
-
-              {/* Bottom corner square */}
-              <div className="flex justify-between items-end">
-                <div className="w-5 h-5 border-[3px] border-black rounded-sm flex items-center justify-center">
-                  <div className="w-2 h-2 bg-black rounded-sm"></div>
-                </div>
-                <div className="flex gap-1">
-                  <div className="w-2 h-2 bg-black rounded-sm"></div>
-                  <div className="w-2 h-2 bg-black rounded-sm"></div>
-                  <div className="w-2 h-2 bg-black rounded-sm"></div>
-                </div>
-              </div>
+            <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center mb-2 shadow-inner">
+              <Gift size={20} className="text-white" />
+            </div>
+            <div className="text-[10px] font-bold tracking-wider text-white uppercase opacity-90">
+              Reward
             </div>
           </motion.div>
 
@@ -256,26 +227,24 @@ function ScanLineIcon({ size, className }: { size: number; className?: string })
 }
 
 export function PricingSection() {
-  const [isAnnual, setIsAnnual] = useState(false);
-
   const plans = [
     {
       name: "Starter",
-      price: isAnnual ? "$24" : "$29",
+      price: "$29",
       desc: "Perfect for independent shops.",
       features: ["Up to 500 customers", "Basic analytics", "Digital punch card", "Email support"],
       isPopular: false,
     },
     {
       name: "Growth",
-      price: isAnnual ? "$49" : "$59",
+      price: "$59",
       desc: "For busy, growing cafes.",
       features: ["Unlimited customers", "Advanced analytics", "Custom rewards", "Staff accounts", "Priority support"],
       isPopular: true,
     },
     {
       name: "Pro",
-      price: isAnnual ? "$89" : "$99",
+      price: "$99",
       desc: "For local chains and franchises.",
       features: ["Multiple locations", "Staff Management (POS)", "Custom branding", "SMS marketing"],
       isPopular: false,
@@ -288,22 +257,6 @@ export function PricingSection() {
       <div className="text-center mb-16">
         <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-4 text-white">Simple, Transparent Pricing</h2>
         <p className="text-fuchsia-400 font-medium mb-8">All plans include a 14-day free trial. Cancel anytime.</p>
-        
-        {/* Toggle */}
-        <div className="flex items-center justify-center gap-4 bg-zinc-900 p-2 rounded-full w-fit mx-auto border border-white/5">
-            <button 
-                onClick={() => setIsAnnual(false)}
-                className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${!isAnnual ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white"}`}
-            >
-                Monthly
-            </button>
-            <button 
-                onClick={() => setIsAnnual(true)}
-                className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${isAnnual ? "bg-purple-500 text-black shadow-sm" : "text-zinc-400 hover:text-white"}`}
-            >
-                Annually (Save 20%)
-            </button>
-        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start mt-12">
@@ -460,4 +413,70 @@ export function PartnerSection() {
              </div>
         </section>
     );
+}
+
+export function SecuritySection() {
+  return (
+    <section className="relative w-full py-24 bg-black border-y border-white/5">
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-6">
+            Enterprise-Grade <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">Security</span>
+          </h2>
+          <p className="text-zinc-400 max-w-2xl mx-auto text-lg">
+            We handle the technical heavy lifting and legal compliance so you can focus on making great coffee. Your data is your property, period.
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-8">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="p-8 rounded-2xl bg-zinc-900/50 border border-white/10 hover:border-purple-500/30 transition-all"
+          >
+            <div className="w-12 h-12 bg-purple-500/20 text-purple-400 rounded-xl flex items-center justify-center mb-6">
+              <ShieldCheck size={24} />
+            </div>
+            <h3 className="text-xl font-bold text-white mb-3">Bank-Level Encryption</h3>
+            <p className="text-zinc-400 leading-relaxed text-sm">
+              Our platform uses end-to-end SSL/TLS encryption. All cafe and customer data is securely isolated in enterprise-grade, heavily monitored data centers.
+            </p>
+          </motion.div>
+
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className="p-8 rounded-2xl bg-zinc-900/50 border border-white/10 hover:border-pink-500/30 transition-all"
+          >
+            <div className="w-12 h-12 bg-pink-500/20 text-pink-400 rounded-xl flex items-center justify-center mb-6">
+              <Lock size={24} />
+            </div>
+            <h3 className="text-xl font-bold text-white mb-3">Your Data is Yours</h3>
+            <p className="text-zinc-400 leading-relaxed text-sm">
+              We never sell, rent, or share your customers' emails. You own 100% of your relationship with your guests. Export your data whenever you want.
+            </p>
+          </motion.div>
+
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="p-8 rounded-2xl bg-zinc-900/50 border border-white/10 hover:border-indigo-500/30 transition-all"
+          >
+            <div className="w-12 h-12 bg-indigo-500/20 text-indigo-400 rounded-xl flex items-center justify-center mb-6">
+              <CreditCard size={24} />
+            </div>
+            <h3 className="text-xl font-bold text-white mb-3">Powered by Stripe</h3>
+            <p className="text-zinc-400 leading-relaxed text-sm">
+              We never store your credit card information. All transactions are securely processed by Stripe, the PCI-compliant industry standard for internet payments.
+            </p>
+          </motion.div>
+        </div>
+      </div>
+    </section>
+  );
 }

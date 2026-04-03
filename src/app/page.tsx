@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Sparkles } from "lucide-react";
-import { HeroSection, HowItWorks, PricingSection, FAQSection, PartnerSection } from "@/components/LandingClient";
+import { HeroSection, HowItWorks, PricingSection, FAQSection, PartnerSection, SecuritySection } from "@/components/LandingClient";
 
 const Logo = () => (
   <div className="relative flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-br from-fuchsia-400 to-pink-500 shadow-lg shadow-purple-500/20">
@@ -40,6 +40,7 @@ export default function Home() {
       <main className="flex-1 relative z-10 w-full flex flex-col items-center">
         <HeroSection />
         <HowItWorks />
+        <SecuritySection />
         <PricingSection />
         <FAQSection />
         <PartnerSection />
