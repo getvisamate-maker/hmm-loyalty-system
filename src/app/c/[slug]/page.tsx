@@ -7,8 +7,42 @@ import { DailyDelight } from "./daily-delight";
 import Link from "next/link";
 import { ArrowLeft, AlertTriangle } from "lucide-react";
 
+import type { Metadata } from "next";
+
 // Ensure page is not statically generated so auth works
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata(props: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const resolvedParams = await props.params;
+  const cookieStore = await cookies();
+  const supabase = createClient(cookieStore);
+
+  // Fast index-backed lookup
+  const { data: cafe } = await supabase
+    .from("cafes")
+    .select("name, logo_url")
+    .eq("slug", resolvedParams.slug)
+    .single();
+
+  if (!cafe) {
+    return { title: "Cafe Not Found" };
+  }
+
+  return {
+    title: `${cafe.name} Rewards`,
+    description: `Join the ${cafe.name} digital loyalty program! Earn stamps on every visit and unlock free rewards without ever needing a paper card again.`,
+    openGraph: {
+      title: `${cafe.name} | Digital Reward Card`,
+      description: `Claim your digital loyalty card for ${cafe.name} instantly.`,
+      images: cafe.logo_url ? [cafe.logo_url] : [],
+    },
+    twitter: {
+      title: `${cafe.name} Rewards`,
+      description: `Claim your digital loyalty card for ${cafe.name} instantly.`,
+      images: cafe.logo_url ? [cafe.logo_url] : [],
+    }
+  };
+}
 
 export default async function CustomerPage(props: { 
   params: Promise<{ slug: string }>,
