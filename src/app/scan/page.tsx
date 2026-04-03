@@ -1,6 +1,11 @@
-import { Scanner } from "./scanner";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import dynamic from "next/dynamic";
+
+const Scanner = dynamic(() => import("./scanner").then((mod) => mod.Scanner), { 
+  ssr: false, 
+  loading: () => <div className="text-zinc-500 animate-pulse">Loading Camera...</div>
+});
 
 export const metadata = {
   title: "Scan Loyalty Code",
