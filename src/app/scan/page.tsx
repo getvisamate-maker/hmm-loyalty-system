@@ -1,11 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import dynamic from "next/dynamic";
-
-const Scanner = dynamic(() => import("./scanner").then((mod) => mod.Scanner), { 
-  ssr: false, 
-  loading: () => <div className="text-zinc-500 animate-pulse">Loading Camera...</div>
-});
+import { DynamicScanner } from "./dynamic-scanner";
 
 export const metadata = {
   title: "Scan Loyalty Code",
@@ -27,7 +22,7 @@ export default function ScanPage() {
         </p>
 
         <div className="w-full max-w-sm mx-auto bg-zinc-900 rounded-3xl overflow-hidden border border-zinc-800 shadow-2xl relative min-h-[300px] flex items-center justify-center">
-          <Scanner />
+          <DynamicScanner />
         </div>
       </div>
     </div>
